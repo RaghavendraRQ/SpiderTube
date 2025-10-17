@@ -1,7 +1,7 @@
-#[tauri::command]
-fn add(a: u8, b: u8) -> u8 {
-    a + b
-}
+mod request;
+
+
+
 
 #[tauri::command]
 fn search(search_term: String) -> String {
@@ -28,7 +28,7 @@ fn search(search_term: String) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![add, search])
+        .invoke_handler(tauri::generate_handler![search, request::sent_request, request::get_template_song])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
