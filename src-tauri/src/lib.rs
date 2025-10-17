@@ -1,6 +1,6 @@
 mod request;
 
-
+mod model;
 
 
 #[tauri::command]
