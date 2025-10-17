@@ -1,4 +1,5 @@
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Song {
     pub title: String,
     pub duration: u16,
