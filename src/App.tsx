@@ -1,49 +1,41 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [sum, SetSum] = useState(0);
+  const [searchTerm, SetSearchTerm] = useState("");
+  const [searchResult, SetSearchResult] = useState("");
+  
+  async function Search() {
+    const res = await invoke<string>("search", { searchTerm: searchTerm});
+    console.log(res)
+    SetSearchResult(res);
+  }
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+  async function addNumbers() {
+    const result = await invoke<number>("add", { a: 12, b: 7 });
+    SetSum(result);
   }
 
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
+      <h1>Spider Tube</h1>
       <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
+        <button onClick={addNumbers}>Click to calculate</button>
+        <p>{sum}</p>
+        </div>
+      <div>
         <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+          type="text"
+          placeholder="Enter search term"
+          value={searchTerm}
+          onChange={(e) => SetSearchTerm(e.target.value)}
         />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+        <button onClick={Search}>Search</button>
+        <p>{searchResult ? searchResult: "No match found."}</p>
+      </div>
+
     </main>
   );
 }
