@@ -1,5 +1,4 @@
 use std::fs;
-use reqwest::dns::Resolve;
 use tauri::{AppHandle, Manager};
 use base64::{Engine as _, engine::general_purpose};
 
