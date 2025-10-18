@@ -1,4 +1,5 @@
 mod request;
+mod model;
 
 
 
@@ -6,6 +7,7 @@ mod request;
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            request::stream::stream_audio,
             request::fetch_song
         ])
         .run(tauri::generate_context!())

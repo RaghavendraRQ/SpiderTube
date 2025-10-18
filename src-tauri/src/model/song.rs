@@ -8,6 +8,20 @@ pub struct Song {
     pub play_count: u32,
 } 
 
+#[derive(Clone, serde::Serialize)]
+pub struct Metadata {
+    pub size: u64,
+    pub mime_type: String,
+    pub filename: String
+}
+
+#[derive(Clone, serde::Serialize)]
+pub struct AudioChunk {
+    pub data: Vec<u8>,
+    pub is_last: bool,
+    pub index: usize
+}
+
 impl Song {
     pub fn new(title: String, duration: u16, date: std::time::SystemTime) -> Self {
         Self {
@@ -20,3 +34,23 @@ impl Song {
     }
 }
 
+
+impl Metadata {
+    pub fn new(size: u64, mime_type: String, filename: String ) -> Self {
+        Self {
+            size,
+            mime_type,
+            filename
+        }
+    }
+}
+
+impl AudioChunk {
+    pub fn new(data: Vec<u8>, is_last: bool, index: usize) -> Self {
+        Self {
+            data,
+            is_last,
+            index
+        }
+    }
+}

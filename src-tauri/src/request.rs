@@ -2,6 +2,8 @@ use std::fs;
 use tauri::{AppHandle, Manager};
 use base64::{Engine as _, engine::general_purpose};
 
+pub mod stream;
+
 #[tauri::command]
 pub async fn fetch_song(app: AppHandle, url: String) -> Result<String, String> {
     let song_name= url.split("/").last().unwrap();
@@ -45,7 +47,5 @@ pub async fn fetch_song_path(app:AppHandle, url: String) -> Result<String, Strin
     fs::write(&file_path, &song_bytes).unwrap();
 
     Ok(file_path.to_string_lossy().to_string())
-
-
 }
 
