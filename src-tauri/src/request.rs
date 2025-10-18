@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{fs, io::Write};
 
 use tauri::{AppHandle, Manager};
 use reqwest::Url;
@@ -18,6 +18,8 @@ pub fn get_template_song() -> Song {
 
 #[tauri::command]
 pub async fn fetch_song(app: AppHandle) -> Result<String, String>{
+
+
     let url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3";
     println!("Fetched song");
     let cache_dir = app.path().app_cache_dir().unwrap();
@@ -37,8 +39,39 @@ pub async fn fetch_song(app: AppHandle) -> Result<String, String>{
         let mut file = std::fs::File::create(&file_path).unwrap();
         file.write_all(&bytes).unwrap();
     }
-    println!("Error here");
+    println!("Done");
 
     Ok(file_path.to_string_lossy().to_string())
 }
 
+#[tauri::command]
+pub fn get_cached_song(app: tauri::AppHandle, song_id: String) -> Result<Option<String>, String> {
+    let cache_dir = app.path().app_cache_dir().map_err(|e| e.to_string())?;
+    let file_path = cache_dir.join(format!("{}.mp3", song_id));
+
+    if file_path.exists() {
+        return Ok(Some(file_path.to_string_lossy().to_string()));
+    } else {
+        Ok(None)
+    }
+
+}
+
+#[tauri::command] 
+pub async fn fetch_song_cache(app: AppHandle) -> Result<String, String> {
+    let url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3";
+
+    
+    let response = reqwest::get(url).await.map_err(|e| e.to_string())?;
+    let song_bytes = response.bytes().await.map_err(|e | e.to_string())?;
+    let song_id = url.split("/").last().unwrap();
+
+    let cache_dir = app.path().app_cache_dir().map_err(|e| e.to_string())?;
+    fs::create_dir_all(&cache_dir).unwrap();
+    let file_path = cache_dir.join(format!("{}", song_id));
+
+    fs::write(&file_path, song_bytes).unwrap();
+
+    Ok(file_path.to_string_lossy().to_string())
+
+}

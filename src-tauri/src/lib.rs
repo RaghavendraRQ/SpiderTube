@@ -28,7 +28,15 @@ fn search(search_term: String) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![search, request::sent_request, request::get_template_song, request::fetch_song])
+        .plugin(tauri_plugin_fs::init())
+        .invoke_handler(tauri::generate_handler![
+            search, 
+            request::sent_request, 
+            request::get_template_song, 
+            request::fetch_song,
+            request::get_cached_song,
+            request::fetch_song_cache
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
