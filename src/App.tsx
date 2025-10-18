@@ -24,6 +24,17 @@ function App() {
     console.log(result);
   }
 
+  async function PlaySong() {
+    // const filePath = await invoke<string>("fetch_song");
+    // console.log(filePath)
+    
+    const filepath = "/home/raghavendra/.cache/com.raghavendra.spidertube/SoundHelix-Song-3.mp3";
+    const audio = new Audio(filepath);
+    console.log('Playing Song')
+    audio.play();
+    console.log("Played Song")
+  }
+
   return (
     <main className="container">
       <h1>Spider Tube</h1>
@@ -50,6 +61,12 @@ function App() {
             <p><strong>Play Count:</strong> {String(song.PlayCount)}</p>
           </div>
          }
+      </div>
+
+      <div>
+        <button onClick={PlaySong}>
+          Play Audio
+        </button>
       </div>
 
     </main>
