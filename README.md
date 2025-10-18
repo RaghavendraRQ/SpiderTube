@@ -1,7 +1,8 @@
-# Tauri + React + Typescript
+### TODO:
+1. Get the innerTube api
+2. Improve the UI
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+### Easy Improvements
+1. Change the base64 response to direct access
+2. Change the button styling
+3. OnChanging the input the audio should change
