@@ -31,11 +31,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             search, 
-            request::sent_request, 
-            request::get_template_song, 
-            request::fetch_song,
-            request::get_cached_song,
-            request::fetch_song_cache
+            request::fetch_song
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,72 +1,39 @@
-import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { type Song, ConvertToSong } from "./models/song";
 import "./App.css";
+import { useState } from "react";
 
 function App() {
-  const [searchTerm, SetSearchTerm] = useState("");
-  const [searchResult, SetSearchResult] = useState("");
-  
-  const [song, SetSong] = useState<Song>();
-  
-  async function Search() {
-    const res = await invoke<string>("search", { searchTerm: searchTerm});
-    console.log(res)
-    SetSearchResult(res);
-  }
-
-  async function getTempSong() {
-    const result = await invoke<Song>("get_template_song");
-    SetSong(
-      ConvertToSong(result)
-    );
-    console.log(song);
-    console.log(result);
-  }
+  const [play, setPlay] = useState(false);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [url, setUrl] = useState("");
 
   async function PlaySong() {
     // const filePath = await invoke<string>("fetch_song");
     // console.log(filePath)
+    if (!audio) {
+      const filePath = await invoke<string>("fetch_song", {url: url})
+      setAudio(new Audio(`data:audio/mpeg;base64,${filePath}`));
+    }
+    setPlay(!play);
+
+    if (play) audio?.pause();
+    else  audio?.play();
     
-    const filepath = "/home/raghavendra/.cache/com.raghavendra.spidertube/SoundHelix-Song-3.mp3";
-    const audio = new Audio(filepath);
-    console.log('Playing Song')
-    audio.play();
-    console.log("Played Song")
-  }
+   
+ }
 
   return (
     <main className="container">
       <h1>Spider Tube</h1>
-      
-      <div>
-        <input
-          type="text"
-          placeholder="Enter search term"
-          value={searchTerm}
-          onChange={(e) => SetSearchTerm(e.target.value)}
-        />
-        <button onClick={Search}>Search</button>
-        <p>{searchResult ? searchResult: "No match found."}</p>
-      </div>
-
-      <div>
-         <button onClick={getTempSong}>Get Template Song</button>
-         {song && 
-          <div>
-            <h2>Song Details:</h2>
-            <p><strong>Title:</strong> {song.Title}</p>
-            <p><strong>Duration:</strong> {String(song.Duration)}</p>
-            <p><strong>Liked:</strong> {song.Liked ? "Yes" : "No"}</p>
-            <p><strong>Play Count:</strong> {String(song.PlayCount)}</p>
-          </div>
-         }
-      </div>
-
-      <div>
+      <input type="text" placeholder="Search"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+      />
+     <div>
         <button onClick={PlaySong}>
           Play Audio
         </button>
+
       </div>
 
     </main>
