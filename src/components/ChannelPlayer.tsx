@@ -1,5 +1,6 @@
 import { invoke, Channel } from "@tauri-apps/api/core";
 import { useState } from "react";
+import { Metadata } from "../models/metadata";
 
 
 type AudioStreamEvent = 
@@ -17,19 +18,19 @@ export default function ChannelPlayer() {
     const [filePath, setFilePath] =  useState<string>("");
     const audioCtx = new window.AudioContext() ;
     let lastEnd = audioCtx?.currentTime;
+    const url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 
     async function BufferAudio(chunk: number[]) {
+        console.log("Streaming media")
         try {
-        const decoded = await audioCtx.decodeAudioData(new Uint8Array(chunk).buffer);
-        const source = audioCtx.createBufferSource();
-        source.buffer = decoded;
-        source.connect(audioCtx.destination);
+            const decoded = await audioCtx.decodeAudioData(new Uint8Array(chunk).buffer);
+            const source = audioCtx.createBufferSource();
+            source.buffer = decoded;
+            source.connect(audioCtx.destination);
 
-        const startTime = Math.max(lastEnd, audioCtx.currentTime);
-        source.start(startTime);
-        lastEnd = startTime + source.buffer.duration;
-
-
+            const startTime = Math.max(lastEnd, audioCtx.currentTime);
+            source.start(startTime);
+            lastEnd = startTime + source.buffer.duration;
         } catch (error) {
             console.error("Error decoding audio chunk:", error);
         }
@@ -38,12 +39,11 @@ export default function ChannelPlayer() {
 
     async function SetUpChannel() {
         const audioChannel = new Channel<AudioStreamEvent>()
-        const metadata = await invoke("stream_audio_through_channel", { filePath: filePath, onEvent: audioChannel });
+        const metadata = await invoke<Metadata>("stream_from_api", { url: url, onEvent: audioChannel });
 
         console.log("Metadata:", metadata);
 
         audioChannel.onmessage = (message) => {
-
             switch (message.event) {
                 case "Started":
                     console.log(message);
