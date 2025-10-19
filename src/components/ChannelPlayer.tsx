@@ -48,10 +48,10 @@ export default function ChannelPlayer() {
                 case "Started":
                     console.log(message);
                     break;
-                case "progress":
+                case "Progress":
                     BufferAudio(message.data.chunkData);
                     break;
-                case "finished":
+                case "Finished":
                     console.log("Streaming finished");
                     break;
                 default:
