@@ -1,5 +1,5 @@
 import { invoke, Channel } from "@tauri-apps/api/core";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Metadata } from "../models/metadata";
 
 type AudioStreamEvent = 
@@ -17,10 +17,9 @@ type AudioStreamEvent =
 export default function ChannelPlayer() {
     const [filePath, setFilePath] = useState<string>("");
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isBuffering, setIsBuffering] = useState(false);
     const [progress, setProgress] = useState(0);
     
-    // Refs for MediaSource components
     const audioRef = useRef<HTMLAudioElement>(null);
     const mediaSourceRef = useRef<MediaSource | null>(null);
     const sourceBufferRef = useRef<SourceBuffer | null>(null);
@@ -28,14 +27,24 @@ export default function ChannelPlayer() {
     const isAppendingRef = useRef(false);
     const metadataRef = useRef<Metadata | null>(null);
     const totalReceivedRef = useRef(0);
+    const lastChunkReceivedRef = useRef(false);
     
     const url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 
     // Process chunks from queue
     const processChunkQueue = () => {
         const sourceBuffer = sourceBufferRef.current;
+        const mediaSource = mediaSourceRef.current;
         
         if (!sourceBuffer || isAppendingRef.current || chunkQueueRef.current.length === 0) {
+            // Check if we should end the stream
+            if (lastChunkReceivedRef.current && 
+                chunkQueueRef.current.length === 0 && 
+                !isAppendingRef.current &&
+                mediaSource?.readyState === "open") {
+                console.log("✅ All chunks processed, ending stream");
+                mediaSource.endOfStream();
+            }
             return;
         }
 
@@ -46,16 +55,15 @@ export default function ChannelPlayer() {
         try {
             const chunk = chunkQueueRef.current.shift()!;
             isAppendingRef.current = true;
-            const toAppend = chunk.slice();
-            sourceBuffer.appendBuffer(toAppend);
-            console.log(`Appended chunk to buffer (${toAppend.length} bytes)`);
+            sourceBuffer.appendBuffer(chunk);
+            console.log(`📦 Appended chunk (${chunk.length} bytes), ${chunkQueueRef.current.length} remaining in queue`);
         } catch (error) {
             console.error("Error appending buffer:", error);
             isAppendingRef.current = false;
         }
     };
 
-    // Create SourceBuffer with correct MIME type
+    // Create SourceBuffer
     const createSourceBuffer = (mimeType: string) => {
         const mediaSource = mediaSourceRef.current;
         if (!mediaSource || mediaSource.readyState !== "open") {
@@ -67,21 +75,20 @@ export default function ChannelPlayer() {
             const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
             sourceBufferRef.current = sourceBuffer;
             
-            console.log("SourceBuffer created with MIME type:", mimeType);
+            console.log("✅ SourceBuffer created:", mimeType);
 
-            // When buffer finishes updating, process next chunk
             sourceBuffer.addEventListener("updateend", () => {
                 isAppendingRef.current = false;
-                processChunkQueue();
+                processChunkQueue(); // Process next chunk immediately
             });
 
             sourceBuffer.addEventListener("error", (e) => {
-                console.error("SourceBuffer error:", e);
+                console.error("❌ SourceBuffer error:", e);
             });
 
         } catch (error) {
             console.error("Failed to create SourceBuffer:", error);
-            alert("Failed to create SourceBuffer. MIME type may not be supported: " + mimeType);
+            alert("MIME type not supported: " + mimeType);
         }
     };
 
@@ -97,38 +104,74 @@ export default function ChannelPlayer() {
         }
 
         mediaSource.addEventListener("sourceopen", () => {
-            console.log("MediaSource opened, waiting for metadata...");
+            console.log("🔓 MediaSource opened");
         });
     };
 
-    // Handle stream completion
-    const handleStreamComplete = () => {
-        console.log("Stream complete, waiting for all chunks to append...");
-        
-        const checkAndEnd = () => {
-            if (chunkQueueRef.current.length === 0 && !isAppendingRef.current) {
-                const mediaSource = mediaSourceRef.current;
-                if (mediaSource && mediaSource.readyState === "open") {
-                    mediaSource.endOfStream();
-                    console.log("MediaSource ended");
-                }
-                setIsLoading(false);
-            } else {
-                setTimeout(checkAndEnd, 100);
+    // Audio element event listeners
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        const handleCanPlay = () => {
+            console.log("✅ Can play - enough data buffered");
+            setIsBuffering(false);
+            
+            // Auto-play when ready
+            audio.play().catch(e => {
+                console.warn("Auto-play blocked by browser:", e.message);
+                // User will need to click play button
+            });
+        };
+
+        const handleWaiting = () => {
+            console.log("⏳ Waiting for more data...");
+            setIsBuffering(true);
+        };
+
+        const handlePlaying = () => {
+            console.log("▶️ Playing");
+            setIsPlaying(true);
+            setIsBuffering(false);
+        };
+
+        const handlePause = () => {
+            console.log("⏸️ Paused");
+            setIsPlaying(false);
+        };
+
+        const handleProgress = () => {
+            // This fires as data is buffered
+            if (audio.buffered.length > 0) {
+                const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+                console.log(`📊 Buffered: ${bufferedEnd.toFixed(1)}s`);
             }
         };
-        
-        checkAndEnd();
-    };
 
-    // Setup streaming channel
+        audio.addEventListener('canplay', handleCanPlay);
+        audio.addEventListener('waiting', handleWaiting);
+        audio.addEventListener('playing', handlePlaying);
+        audio.addEventListener('pause', handlePause);
+        audio.addEventListener('progress', handleProgress);
+
+        return () => {
+            audio.removeEventListener('canplay', handleCanPlay);
+            audio.removeEventListener('waiting', handleWaiting);
+            audio.removeEventListener('playing', handlePlaying);
+            audio.removeEventListener('pause', handlePause);
+            audio.removeEventListener('progress', handleProgress);
+        };
+    }, []);
+
+    // Setup streaming
     async function SetUpChannel() {
         try {
-            setIsLoading(true);
+            setIsBuffering(true);
             setProgress(0);
             chunkQueueRef.current = [];
             totalReceivedRef.current = 0;
             isAppendingRef.current = false;
+            lastChunkReceivedRef.current = false;
             
             // Clean up previous MediaSource
             if (mediaSourceRef.current) {
@@ -149,7 +192,7 @@ export default function ChannelPlayer() {
             audioChannel.onmessage = (message) => {
                 switch (message.event) {
                     case "Started":
-                        console.log("Stream started:", message.data.songId);
+                        console.log("🎵 Stream started:", message.data.songId);
                         break;
                         
                     case "Progress":
@@ -166,20 +209,21 @@ export default function ChannelPlayer() {
                             setProgress(Math.round(progressPercent));
                         }
                         
-                        console.log(`Received chunk ${message.data.chunkId} (${chunkData.length} bytes)`);
+                        console.log(`📥 Chunk ${message.data.chunkId} (${chunkData.length} bytes)${message.data.isLast ? ' [LAST]' : ''}`);
                         
-                        // Process the queue
-                        processChunkQueue();
-                        
-                        // Check if last chunk
+                        // Mark if this is the last chunk
                         if (message.data.isLast) {
-                            handleStreamComplete();
+                            lastChunkReceivedRef.current = true;
                         }
+                        
+                        // Process immediately
+                        processChunkQueue();
                         break;
                         
                     case "Finished":
-                        console.log("Stream finished");
-                        handleStreamComplete();
+                        console.log("🏁 Stream finished");
+                        lastChunkReceivedRef.current = true;
+                        processChunkQueue(); // Try to end if queue is empty
                         break;
                         
                     default:
@@ -187,43 +231,38 @@ export default function ChannelPlayer() {
                 }
             };
             
-            // Invoke the streaming command
+            // Invoke streaming
             const metadata = await invoke<Metadata>("stream_from_api", { 
                 url: url, 
                 onEvent: audioChannel 
             });
             
-            console.log("Metadata:", metadata);
+            console.log("📋 Metadata:", metadata);
             metadataRef.current = metadata;
             
-            // Create SourceBuffer with the MIME type from metadata
+            // Create SourceBuffer
             createSourceBuffer(metadata.mimeType);
             
         } catch (error) {
-            console.error("Error setting up channel:", error);
-            alert("Failed to setup streaming: " + error);
-            setIsLoading(false);
+            console.error("Error:", error);
+            alert("Failed: " + error);
+            setIsBuffering(false);
         }
     }
 
-    // Play/Pause handler
     const handlePlayPause = () => {
         if (!audioRef.current) return;
 
         if (isPlaying) {
             audioRef.current.pause();
-            setIsPlaying(false);
         } else {
-            audioRef.current.play().catch((e) => {
-                console.error("Play error:", e);
-            });
-            setIsPlaying(true);
+            audioRef.current.play().catch(console.error);
         }
     };
 
     return (
         <div style={{ padding: "2rem" }}>
-            <h2>🎵 MediaSource Streaming Player</h2>
+            <h2>🎵 Progressive Streaming Player</h2>
             
             <div style={{ marginBottom: "1rem" }}>
                 <input 
@@ -235,13 +274,13 @@ export default function ChannelPlayer() {
                 />
                 <button 
                     onClick={SetUpChannel}
-                    disabled={isLoading}
+                    disabled={isBuffering && progress === 0}
                 >
-                    {isLoading ? "Loading..." : "Start Streaming"}
+                    Start Streaming
                 </button>
             </div>
 
-            {isLoading && (
+            {progress > 0 && (
                 <div style={{ marginBottom: "1rem" }}>
                     <div style={{
                         width: "100%",
@@ -253,11 +292,13 @@ export default function ChannelPlayer() {
                         <div style={{
                             width: `${progress}%`,
                             height: "100%",
-                            backgroundColor: "#4caf50",
+                            backgroundColor: isBuffering ? "#ff9800" : "#4caf50",
                             transition: "width 0.3s"
                         }} />
                     </div>
-                    <p>Buffering: {progress}%</p>
+                    <p>
+                        {isBuffering ? "⏳ Buffering..." : "✅ Ready"} - Downloaded: {progress}%
+                    </p>
                 </div>
             )}
 
@@ -266,18 +307,13 @@ export default function ChannelPlayer() {
                     <button onClick={handlePlayPause}>
                         {isPlaying ? "⏸️ Pause" : "▶️ Play"}
                     </button>
-                    <p>File: {metadataRef.current.filename}</p>
-                    <p>Type: {metadataRef.current.mimeType}</p>
-                    <p>Size: {(metadataRef.current.totalSize / 1024 / 1024).toFixed(2)} MB</p>
+                    <p>📁 {metadataRef.current.filename}</p>
+                    <p>🎵 {metadataRef.current.mimeType}</p>
+                    <p>💾 {(metadataRef.current.totalSize / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
             )}
 
-            {/* Hidden audio element for playback */}
-            <audio 
-                ref={audioRef}
-                onPlaying={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-            />
+            <audio ref={audioRef} />
         </div>
     );
 }
