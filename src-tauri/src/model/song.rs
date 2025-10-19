@@ -10,6 +10,7 @@ pub struct Song {
 } 
 
 #[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Metadata {
     pub size: u64,
     pub mime_type: String,

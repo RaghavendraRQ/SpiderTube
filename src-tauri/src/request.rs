@@ -3,6 +3,7 @@ use tauri::{AppHandle, Manager};
 use base64::{Engine as _, engine::general_purpose};
 
 pub mod stream;
+pub mod api_stream;
 
 #[tauri::command]
 pub async fn fetch_song(app: AppHandle, url: String) -> Result<String, String> {
