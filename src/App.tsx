@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import { useState } from "react";
 import ChannelPlayer from "./components/ChannelPlayer";
+import MediaPlayer from "./components/MediaPlayer";
 
 function App() {
   const [play, setPlay] = useState(false);
@@ -38,6 +39,10 @@ function App() {
       </div>
 
       <ChannelPlayer></ChannelPlayer>
+
+      <div>
+        <MediaPlayer></MediaPlayer>
+      </div>
 
     </main>
   );
