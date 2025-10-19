@@ -9,6 +9,11 @@ function App() {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [url, setUrl] = useState("");
 
+
+  async function songInfo() {
+    await invoke("get_song_info");
+  }
+
   async function PlaySong() {
     // const filePath = await invoke<string>("fetch_song");
     // console.log(filePath)
@@ -36,6 +41,10 @@ function App() {
           Play Audio
         </button>
 
+      </div>
+
+      <div>
+        <button onClick={songInfo}>Click here please</button>
       </div>
 
       <ChannelPlayer></ChannelPlayer>
