@@ -46,8 +46,9 @@ export default function ChannelPlayer() {
         try {
             const chunk = chunkQueueRef.current.shift()!;
             isAppendingRef.current = true;
-            sourceBuffer.appendBuffer(chunk);
-            console.log(`Appended chunk to buffer (${chunk.length} bytes)`);
+            const toAppend = chunk.slice();
+            sourceBuffer.appendBuffer(toAppend);
+            console.log(`Appended chunk to buffer (${toAppend.length} bytes)`);
         } catch (error) {
             console.error("Error appending buffer:", error);
             isAppendingRef.current = false;
