@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Song {
@@ -36,6 +37,7 @@ pub enum AudioStreamEvent {
     Finished
 }
 
+#[allow(dead_code)]
 impl Song {
     pub fn new(title: String, duration: u16, date: std::time::SystemTime) -> Self {
         Self {

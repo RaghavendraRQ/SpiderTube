@@ -25,7 +25,6 @@ impl Event {
             Event::StreamComplete => "stream-complete",
             Event::StreamError => "stream-error",
 
-            _ => "misconfigured"
         }
 
     }

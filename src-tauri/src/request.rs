@@ -34,6 +34,9 @@ pub async fn fetch_song_and_cache(app: AppHandle, url: &String) -> Result<String
 
 }
 
+// Should be used to check if the audio has already been cached in app's cache folder
+// Will be used for downloads also (Extended this only)
+#[allow(dead_code)]
 #[tauri::command]
 pub async fn fetch_song_path(app:AppHandle, url: String) -> Result<String, String> {
     let response = reqwest::get(&url).await.map_err(|e| e.to_string())?;
