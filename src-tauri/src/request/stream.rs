@@ -2,7 +2,7 @@ use std::{fs::File, io::Read, os::unix::fs::MetadataExt, path::Path};
 
 use crate::model::song;
 
-use tauri::{AppHandle, Emitter};
+use tauri::{ipc::Channel, AppHandle, Emitter};
 
 
 const CHUNK_SIZE: usize = 256 * 1024;
@@ -10,25 +10,20 @@ const CHUNK_SIZE: usize = 256 * 1024;
 enum Event {
     MetadataStream,
     
-    AudioChunkStart,
-    AudioChunkStop,
     AudioChunkContinue,
 
     StreamComplete,
-    StreamStart,
-    StreamError
+    StreamError,
 }
+
 
 impl Event {
     fn as_str(&self) -> &'static str {
         match self {
             Event::MetadataStream => "metadata-stream",
-            Event::AudioChunkStart => "audio-chunk-start",
-            Event::AudioChunkStop => "audio-chunk-stop",
             Event::AudioChunkContinue => "audio-chunk-continue",
             Event::StreamComplete => "stream-complete",
             Event::StreamError => "stream-error",
-            Event::StreamStart => "stream-start",
 
             _ => "misconfigured"
         }
@@ -49,6 +44,29 @@ pub async fn stream_audio(app: AppHandle, file_path: String) -> Result<(), Strin
     });
 
     Ok(())
+
+}
+
+#[tauri::command]
+pub async fn stream_audio_through_channel(file_path: String, on_event: Channel<song::AudioStreamEvent>) -> Result<song::Metadata, String> {
+    let mut file = File::open(&file_path).map_err(|e| e.to_string())?;
+
+    let metadata = file.metadata().map_err(|e| e.to_string())?;
+    let filename = Path::new(&file_path)
+                            .file_name()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("Renu.MP3")
+                            .to_string();
+
+    let size = metadata.size() as usize;
+
+    std::thread::spawn(move || {
+        if let Err(e) = stream_audio_channel(&mut file, size, "123", on_event) {
+            eprintln!("Error in streaming thorough channels: {}", e);
+        }
+    });
+    
+    Ok(song::Metadata::new(metadata.size(), get_mime_type(&file_path), filename))
 
 }
 
@@ -107,4 +125,39 @@ fn  get_mime_type(path: &str) -> String {
         Some("m4a") => "audio/mp4".to_string(),
         _ => "audio/mpeg".to_string()
     }
+}
+
+
+#[tauri::command]
+fn stream_audio_channel(file: &mut File, total_size: usize, song_id: &str, audio_channel: Channel<song::AudioStreamEvent>) 
+-> Result<(), String> {
+
+    let mut buffer = vec![0u8; CHUNK_SIZE];
+    let mut chunk_id = 0;
+    let mut bytes_sent = 0;
+
+    audio_channel.send(song::AudioStreamEvent::Started { 
+        song_id: song_id.to_string()
+    }).map_err(|e| e.to_string())?;
+
+    loop {
+        let bytes_read = file.read(&mut buffer).map_err(|e| e.to_string())?;
+        if bytes_read == 0 { break; }
+
+        bytes_sent += bytes_read;
+        let is_last = bytes_sent >= total_size || bytes_read < CHUNK_SIZE;
+        chunk_id += 1;
+
+        audio_channel.send(song::AudioStreamEvent::Progress {
+            chunk_data: buffer.to_vec(),
+            chunk_id: chunk_id,
+            is_last
+        }).map_err(|e| e.to_string())?;
+
+        if is_last { break; }
+    }
+
+    audio_channel.send(song::AudioStreamEvent::Finished).map_err(|e| e.to_string())?;
+
+    Ok(())
 }

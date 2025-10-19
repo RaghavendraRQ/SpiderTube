@@ -22,6 +22,20 @@ pub struct AudioChunk {
     pub index: usize
 }
 
+#[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AudioStreamEvent {
+    Started {
+        song_id: String
+    },
+    Progress {
+        chunk_data: Vec<u8>,
+        chunk_id: usize,
+        is_last: bool
+    },
+    Finished
+}
+
 impl Song {
     pub fn new(title: String, duration: u16, date: std::time::SystemTime) -> Self {
         Self {
