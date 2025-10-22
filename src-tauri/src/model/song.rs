@@ -7,35 +7,40 @@ pub struct Song {
     pub date: std::time::SystemTime,
     pub liked: bool,
     pub play_count: u32,
-} 
+}
 
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     pub size: u64,
     pub mime_type: String,
-    pub filename: String
+    pub filename: String,
 }
 
 #[derive(Clone, serde::Serialize)]
 pub struct AudioChunk {
     pub data: Vec<u8>,
     pub is_last: bool,
-    pub index: usize
+    pub index: usize,
 }
 
 #[derive(Clone, serde::Serialize)]
-#[serde(rename_all = "PascalCase", rename_all_fields = "camelCase", tag = "event", content = "data")]
+#[serde(
+    rename_all = "PascalCase",
+    rename_all_fields = "camelCase",
+    tag = "event",
+    content = "data"
+)]
 pub enum AudioStreamEvent {
     Started {
-        song_id: String
+        song_id: String,
     },
     Progress {
         chunk_data: Vec<u8>,
         chunk_id: usize,
-        is_last: bool
+        is_last: bool,
     },
-    Finished
+    Finished,
 }
 
 #[allow(dead_code)]
@@ -51,13 +56,12 @@ impl Song {
     }
 }
 
-
 impl Metadata {
-    pub fn new(size: u64, mime_type: String, filename: String ) -> Self {
+    pub fn new(size: u64, mime_type: String, filename: String) -> Self {
         Self {
             size,
             mime_type,
-            filename
+            filename,
         }
     }
 }
@@ -67,7 +71,7 @@ impl AudioChunk {
         Self {
             data,
             is_last,
-            index
+            index,
         }
     }
 }
