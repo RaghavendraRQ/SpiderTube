@@ -64,7 +64,7 @@ pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Str
     for item in tracks.items.items.to_vec().iter() {
         if limit != 0 {
             limit -= 1;
-            res.push(item.id().to_string());
+            res.push(item.name().to_string());
         }
     }
     // dbg!(tracks.items.items[0..5].to_vec());
