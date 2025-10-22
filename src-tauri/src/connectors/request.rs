@@ -2,9 +2,9 @@ use rustypipe::{
     client::RustyPipe,
     model::{traits::YtEntity, MusicItem, MusicSearchResult},
 };
-use tauri::Manager;
+use tauri::{Manager, AppHandle};
 
-fn get_rustypipe(app: &tauri::AppHandle) -> RustyPipe {
+fn get_rustypipe(app: &AppHandle) -> RustyPipe {
     RustyPipe::builder()
         .storage_dir(app.path().app_cache_dir().unwrap())
         .build()
@@ -12,7 +12,7 @@ fn get_rustypipe(app: &tauri::AppHandle) -> RustyPipe {
 }
 
 #[tauri::command]
-pub async fn get_song_info(app: tauri::AppHandle, video_url: String) -> Result<String, String> {
+pub async fn get_song_info(app: AppHandle, video_url: String) -> Result<String, String> {
     let rp = get_rustypipe(&app);
     let metadata = rp
         .query()
@@ -26,8 +26,8 @@ pub async fn get_song_info(app: tauri::AppHandle, video_url: String) -> Result<S
 
 /// There is a bug in this function
 #[tauri::command]
-pub async fn get_track_thumbnail(video_url: String) -> Result<(), String> {
-    let rp = RustyPipe::new();
+pub async fn get_track_thumbnail(app: AppHandle, video_url: String) -> Result<(), String> {
+    let rp = get_rustypipe(&app);
 
     let track = rp
         .query()
@@ -45,8 +45,8 @@ pub async fn get_track_thumbnail(video_url: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn search_result(track_name: String) -> Result<Vec<String>, String> {
-    let rp = RustyPipe::new();
+pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<String>, String> {
+    let rp = get_rustypipe(&app);
     let tracks: MusicSearchResult<MusicItem> = rp
         .query()
         .music_search(&track_name, None)
