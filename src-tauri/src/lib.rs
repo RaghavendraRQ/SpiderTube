@@ -1,7 +1,6 @@
 mod request;
 mod connectors;
 mod model;
-mod rusty;
 
 
 
@@ -13,9 +12,9 @@ pub fn run() {
             request::stream::stream_audio,
             request::stream::stream_audio_through_channel,
             request::api_stream::stream_from_api,
-            rusty::get_song_info,
-            rusty::get_song_url,
-            connectors::request::test_url_access
+            connectors::request::get_song_info,
+            connectors::request::get_track_thumbnail,
+            connectors::request::search_result
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
