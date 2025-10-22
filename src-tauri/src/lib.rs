@@ -1,8 +1,6 @@
-mod request;
 mod connectors;
 mod model;
-
-
+mod request;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

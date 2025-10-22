@@ -1,15 +1,18 @@
+use base64::{engine::general_purpose, Engine as _};
 use std::fs;
 use tauri::{AppHandle, Manager};
-use base64::{Engine as _, engine::general_purpose};
 
-pub mod stream;
 pub mod api_stream;
+pub mod stream;
 
 #[tauri::command]
 pub async fn fetch_song(app: AppHandle, url: String) -> Result<String, String> {
-    let song_name= url.split("/").last().unwrap();
-    let file_path = app.path().app_cache_dir().map_err(|e| e.to_string())?
-    .join(&song_name);
+    let song_name = url.split("/").last().unwrap();
+    let file_path = app
+        .path()
+        .app_cache_dir()
+        .map_err(|e| e.to_string())?
+        .join(&song_name);
     println!("{:?}", file_path);
     if file_path.exists() {
         println!("Cache Hit");
@@ -22,7 +25,7 @@ pub async fn fetch_song(app: AppHandle, url: String) -> Result<String, String> {
 
 pub async fn fetch_song_and_cache(app: AppHandle, url: &String) -> Result<String, String> {
     let response = reqwest::get(url).await.map_err(|e| e.to_string())?;
-    let song_bytes = response.bytes().await.map_err(|e | e.to_string())?;
+    let song_bytes = response.bytes().await.map_err(|e| e.to_string())?;
     let song_name = url.split("/").last().unwrap();
 
     let cache_dir = app.path().app_cache_dir().map_err(|e| e.to_string())?;
@@ -32,16 +35,15 @@ pub async fn fetch_song_and_cache(app: AppHandle, url: &String) -> Result<String
     fs::write(&file_path, &song_bytes).unwrap();
 
     Ok(general_purpose::STANDARD.encode(song_bytes))
-
 }
 
 // Should be used to check if the audio has already been cached in app's cache folder
 // Will be used for downloads also (Extended this only)
 #[allow(dead_code)]
 #[tauri::command]
-pub async fn fetch_song_path(app:AppHandle, url: String) -> Result<String, String> {
+pub async fn fetch_song_path(app: AppHandle, url: String) -> Result<String, String> {
     let response = reqwest::get(&url).await.map_err(|e| e.to_string())?;
-    let song_bytes = response.bytes().await.map_err(|e | e.to_string())?;
+    let song_bytes = response.bytes().await.map_err(|e| e.to_string())?;
     let song_name = url.split("/").last().unwrap();
 
     let cache_dir = app.path().app_cache_dir().map_err(|e| e.to_string())?;
@@ -52,4 +54,3 @@ pub async fn fetch_song_path(app:AppHandle, url: String) -> Result<String, Strin
 
     Ok(file_path.to_string_lossy().to_string())
 }
-
