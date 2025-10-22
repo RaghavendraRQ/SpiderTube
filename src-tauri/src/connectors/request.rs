@@ -43,7 +43,7 @@ pub async fn test_url_access(video_id: String) -> Result<String, String> {
     eprintln!("Testing URL accessibility...");
     
     // Build client with headers
-    let mut headers = HeaderMap::new();
+    let mut headers: HeaderMap = HeaderMap::new();
     headers.insert(
         "User-Agent",
         HeaderValue::from_static(
