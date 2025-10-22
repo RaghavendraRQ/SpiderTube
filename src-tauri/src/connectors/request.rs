@@ -1,5 +1,5 @@
 
-use rustypipe::{client::RustyPipe, model::{SearchResult, TrackItem}};
+use rustypipe::{client::RustyPipe, model::{traits::YtEntity, MusicItem, MusicSearchResult }};
 
 
 #[tauri::command]
@@ -31,9 +31,21 @@ pub async fn get_track_thumbnail(video_url: String) -> Result<(), String> {
 
 
 #[tauri::command]
-pub async  fn search_result(track_name: String) -> Result <SearchResult<TrackItem>, String> {
+pub async  fn search_result(track_name: String) -> Result <Vec<String>, String> {
     let rp = RustyPipe::new();
-    let tracks: SearchResult<TrackItem> = rp.query().search(track_name).await.map_err(|e| e.to_string())?;
-    dbg!(&tracks);
-    Ok(tracks)
+    let tracks: MusicSearchResult<MusicItem> = rp.query().music_search(&track_name, None).await.map_err(|e| e.to_string())?;
+    let suggestion = rp.query().search_suggestion("chuttamalle").await.map_err(|e| e.to_string())?;
+
+    let mut res: Vec<String> = vec![];
+    let mut limit = 10;
+
+    for item in tracks.items.items.to_vec().iter() {
+        if limit != 0 {
+            limit -= 1;
+            res.push(item.id().to_string());
+        }
+    }
+    // dbg!(tracks.items.items[0..5].to_vec());
+    dbg!(suggestion);
+    Ok(res)
 }
