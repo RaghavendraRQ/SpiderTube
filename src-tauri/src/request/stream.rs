@@ -54,7 +54,7 @@ pub async fn stream_audio_through_channel(file_path: String, on_event: Channel<s
     let filename = Path::new(&file_path)
                             .file_name()
                             .and_then(|s| s.to_str())
-                            .unwrap_or("Renu.MP3")
+                            .unwrap_or("Renu.mp3")
                             .to_string();
 
     let size = metadata.size() as usize;

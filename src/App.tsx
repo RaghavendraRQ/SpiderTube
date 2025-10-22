@@ -12,14 +12,20 @@ function App() {
 
   async function songInfo() {
     // await invoke("get_song_url", {url: url});
-    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    const url = "dQw4w9WgXcQ";
     try {
-      const report = await invoke<string>("test_url_access", { videoUrl: url });
+      const report = await invoke<string>("get_song_info", { videoUrl: url });
       console.log('report', report)
+      // const thumbnail = await invoke("get_track_thumbnail", { videoUrl: url});
+      // console.log('thumbnail', thumbnail)
+      const searchResults = await invoke<string>("search_result", { query: "never gonna give you up"});
+      console.log('searchResults', searchResults)
     } catch(err) {
       console.log('err', err)
     }
   }
+
+  
 
   async function PlaySong() {
     // const filePath = await invoke<string>("fetch_song");
