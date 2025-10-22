@@ -19,10 +19,10 @@ pub async fn get_song_info(url: &str) -> Result<(), String>{
 pub async fn get_song_url(url: &str) -> Result<(), String> {
     let rp = RustyPipe::new();
     let song_url = rp.query()
-                     .music_search_tracks(url)
+                     .player(url)
                      .await
                      .map_err(|e| e.to_string())?;
-    let url = song_url.items.endpoint;
-    dbg!(url);
+    let stream_end_point = song_url.audio_streams;
+    dbg!(&stream_end_point[0].url);
     Ok(())
 } 
