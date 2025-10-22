@@ -8,6 +8,8 @@ function App() {
   const [play, setPlay] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [url, setUrl] = useState("");
+  const [search, setSearch] = useState<string | null>(null);
+  const [result, setResult] = useState<Array<string> | null>(null);
 
 
   async function songInfo() {
@@ -18,12 +20,23 @@ function App() {
       console.log('report', report)
       // const thumbnail = await invoke("get_track_thumbnail", { videoUrl: url});
       // console.log('thumbnail', thumbnail)
-      const searchResults = await invoke<string>("search_result", { query: "never gonna give you up"});
-      console.log('searchResults', searchResults)
     } catch(err) {
       console.log('err', err)
     }
   }
+
+  async function searchSongs() {
+    if (search == null) {
+      return
+    }
+    try {
+      const res = await invoke<Array<string>>("search_result", {trackName: search});
+      setResult(res);
+    } catch (err) {
+      console.log('err:', err)
+    }
+  }
+
 
   
 
@@ -46,9 +59,20 @@ function App() {
     <main className="container">
       <h1>Spider Tube</h1>
       <input type="text" placeholder="Search"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
+        value={search? search : ""}
+        onChange={(e) => setSearch(e.target.value)}
       />
+      <button onClick={searchSongs}> Search Song </button>
+
+
+      {result && 
+        result.map((res) => {
+          return (
+            <li>{res}</li>
+          )
+        })
+      }
+
      <div>
         <button onClick={PlaySong}>
           Play Audio
