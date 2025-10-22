@@ -12,8 +12,9 @@ function App() {
 
   async function songInfo() {
     // await invoke("get_song_url", {url: url});
+    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
     try {
-      const report = await invoke<string>("test_url_access", { videoId: "dQw4w9WgXcQ"});
+      const report = await invoke<string>("test_url_access", { videoUrl: url });
       console.log('report', report)
     } catch(err) {
       console.log('err', err)
