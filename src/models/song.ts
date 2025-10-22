@@ -1,18 +1,22 @@
 
 type Song = {
-    Title: String,
-    Duration: Number,
-    Liked: boolean,
-    PlayCount: Number,
+    id: string;
+    name: string;
+    thumbnail: Thumbnail[] | null;
 }
 
-function ConvertToSong(obj: any): Song {
+type Thumbnail = {
+    url: string;
+    width: number;
+    height: number;
+}
+
+function createSong(id: string | null, name: string, thumbnail: Thumbnail[] | null): Song {
     return {
-        Title: obj.title,
-        Duration: obj.duration,
-        Liked: obj.liked,
-        PlayCount: obj.play_count,
+        id: id ? id : "",
+        name,
+        thumbnail
     };
 }
 
-export { type Song, ConvertToSong };
+export { type Song, createSong };
