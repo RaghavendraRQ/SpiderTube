@@ -9,10 +9,10 @@ const CHUNK_SIZE: usize = 512 * 1024;
 
 #[tauri::command]
 pub async fn stream_from_api(
-    url: String,
+    url: &str,
     on_event: Channel<song::AudioStreamEvent>,
 ) -> Result<song::Metadata, String> {
-    let response = reqwest::get(&url).await.map_err(|e| e.to_string())?;
+    let response = reqwest::get(url).await.map_err(|e| e.to_string())?;
 
     let content_type = response
         .headers()
@@ -22,7 +22,7 @@ pub async fn stream_from_api(
         .to_string();
 
     let content_length = response.content_length().unwrap_or(0);
-    let metadata = song::Metadata::new(content_length, content_type, extract_file_name(&url));
+    let metadata = song::Metadata::new(content_length, content_type, extract_file_name(url));
 
     // thread::spawn(move || {
     //     if let Err(e) = stream_audio_from_api(&url, &on_event) {
