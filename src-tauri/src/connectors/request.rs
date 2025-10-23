@@ -2,7 +2,7 @@ use rustypipe::{
     client::RustyPipe,
     model::{MusicItem, MusicSearchResult, Thumbnail},
 };
-use tauri::{Manager, AppHandle};
+use tauri::{AppHandle, Manager};
 
 use super::Song;
 
@@ -29,7 +29,10 @@ pub async fn get_song_info(app: AppHandle, video_id: String) -> Result<String, S
 /// There is a bug in this function
 /// TODO: Change the player usage to music track
 #[tauri::command]
-pub async fn get_track_thumbnail(app: AppHandle, video_id: String) -> Result<Option<Vec<Thumbnail>>, String> {
+pub async fn get_track_thumbnail(
+    app: AppHandle,
+    video_id: String,
+) -> Result<Option<Vec<Thumbnail>>, String> {
     let rp = get_rustypipe(&app);
 
     let track = rp
