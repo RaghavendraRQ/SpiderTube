@@ -2,6 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import { useState } from "react";
 import { type Song, createSong } from "./models/song";
+import ChannelPlayer from "./components/ChannelPlayer";
+import MediaPlayer from "./components/MediaPlayer";
 
 function App() {
 
@@ -46,6 +48,9 @@ function App() {
           ))}
         </ul>
        )}
+          <ChannelPlayer />
+          <MediaPlayer />
+          
     </div>
   )
 }

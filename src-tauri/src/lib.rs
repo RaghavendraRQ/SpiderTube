@@ -12,7 +12,8 @@ pub fn run() {
             request::api_stream::stream_from_api,
             connectors::request::get_song_info,
             connectors::request::get_track_thumbnail,
-            connectors::request::search_result
+            connectors::request::search_result,
+            connectors::stream_song
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -29,7 +29,7 @@ export default function ChannelPlayer() {
     const totalReceivedRef = useRef(0);
     const lastChunkReceivedRef = useRef(false);
     
-    const url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
     // Process chunks from queue
     const processChunkQueue = () => {
@@ -232,16 +232,22 @@ export default function ChannelPlayer() {
             };
             
             // Invoke streaming
-            const metadata = await invoke<Metadata>("stream_from_api", { 
-                url: url, 
+            try {
+            const metadata = await invoke<Metadata>("stream_song", { 
+                videoUrl: url, 
                 onEvent: audioChannel 
             });
+ 
             
+           
             console.log("📋 Metadata:", metadata);
             metadataRef.current = metadata;
             
             // Create SourceBuffer
             createSourceBuffer(metadata.mimeType);
+        } catch(err) {
+            console.log('err', err)
+        }
             
         } catch (error) {
             console.error("Error:", error);

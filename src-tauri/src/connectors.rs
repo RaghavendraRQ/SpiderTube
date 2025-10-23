@@ -1,4 +1,7 @@
 use rustypipe::model::{traits::YtEntity, MusicItem, Thumbnail};
+use tauri::ipc::Channel;
+
+use crate::model::song::{self, Metadata};
 
 pub mod request;
 pub mod stream;
@@ -25,6 +28,14 @@ impl Song {
             },
         }
     }
+}
+
+#[tauri::command]
+pub async fn stream_song(video_url: &str, on_event: Channel<song::AudioStreamEvent>) -> Result<Metadata, String> {
+    let urls = stream::get_audio_url(video_url).map_err(|e| e.to_string())?.unwrap();
+    eprintln!("urls: {:?}", urls);
+    let metadata = crate::request::api_stream::stream_from_api(&urls, on_event).await.map_err(|e| e.to_string())?;
+    Ok(metadata)
 }
 
 #[cfg(test)]

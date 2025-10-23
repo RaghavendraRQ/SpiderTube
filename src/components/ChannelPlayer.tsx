@@ -18,7 +18,7 @@ export default function ChannelPlayer() {
     const [filePath, setFilePath] =  useState<string>("");
     const audioCtx = new window.AudioContext() ;
     let lastEnd = audioCtx?.currentTime;
-    const url = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
     async function BufferAudio(chunk: number[]) {
         console.log("Streaming media")
@@ -39,7 +39,7 @@ export default function ChannelPlayer() {
 
     async function SetUpChannel() {
         const audioChannel = new Channel<AudioStreamEvent>()
-        const metadata = await invoke<Metadata>("stream_from_api", { url: url, onEvent: audioChannel });
+        const metadata = await invoke<Metadata>("stream_song", { videoUrl: url, onEvent: audioChannel });
 
         console.log("Metadata:", metadata);
 
