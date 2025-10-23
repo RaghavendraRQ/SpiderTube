@@ -237,9 +237,6 @@ export default function ChannelPlayer() {
                 videoUrl: url, 
                 onEvent: audioChannel 
             });
- 
-            
-           
             console.log("📋 Metadata:", metadata);
             metadataRef.current = metadata;
             
