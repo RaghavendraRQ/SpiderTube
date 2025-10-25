@@ -16,10 +16,10 @@ pub(super) fn get_audio_url(video_url: &str) -> Result<Option<String>, String> {
         .map_err(|e| e.to_string())?;
 
     if !output.status.success() {
-        return  Ok(None);
+        return Ok(None);
     }
 
-    let url= String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
-    
+    let url = String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
+
     Ok(Some(url))
 }
