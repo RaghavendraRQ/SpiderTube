@@ -31,10 +31,17 @@ impl Song {
 }
 
 #[tauri::command]
-pub async fn stream_song(video_url: &str, on_event: Channel<song::AudioStreamEvent>) -> Result<Metadata, String> {
-    let urls = stream::get_audio_url(video_url).map_err(|e| e.to_string())?.unwrap();
+pub async fn stream_song(
+    video_url: &str,
+    on_event: Channel<song::AudioStreamEvent>,
+) -> Result<Metadata, String> {
+    let urls = stream::get_audio_url(video_url)
+        .map_err(|e| e.to_string())?
+        .unwrap();
     eprintln!("urls: {:?}", urls);
-    let metadata = crate::request::api_stream::stream_from_api(&urls, on_event).await.map_err(|e| e.to_string())?;
+    let metadata = crate::request::api_stream::stream_from_api(&urls, on_event)
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(metadata)
 }
 
@@ -52,7 +59,5 @@ mod tests {
     fn test_ytdlp_url() {
         let res = stream::get_audio_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         assert!(res.is_ok());
-        
     }
-
 }

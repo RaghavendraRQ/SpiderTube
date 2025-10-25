@@ -1,9 +1,9 @@
-use std::{vec};
+use std::{io::Read, vec};
 
 use futures::StreamExt;
 use tauri::ipc::Channel;
 
-use crate::model::song;
+use crate::model::song::{self, AudioStreamEvent};
 
 const CHUNK_SIZE: usize = 512 * 1024;
 
@@ -15,7 +15,6 @@ pub async fn stream_from_api(
     let client = reqwest::Client::builder().user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").build().unwrap();
     let response = client.get(url).send().await.map_err(|e| e.to_string())?;
 
-
     let content_type = response
         .headers()
         .get("content-type")
@@ -25,9 +24,8 @@ pub async fn stream_from_api(
 
     let content_length = response.content_length().unwrap_or(0);
 
-
     if content_type.starts_with("text/") {
-        return  Err(format!("Invalid format: {}", content_type));
+        return Err(format!("Invalid format: {}", content_type));
     }
     eprintln!("content_length: {}", content_length);
     let metadata = song::Metadata::new(content_length, content_type, extract_file_name(url));
@@ -102,4 +100,49 @@ fn extract_file_name(url: &str) -> String {
         .and_then(|s| s.split('?').next())
         .unwrap_or("temp_song")
         .to_string()
+}
+
+async fn stream_and_cache(
+    stdout: &mut std::process::ChildStdout,
+    channel: Channel<AudioStreamEvent>,
+) -> Result<(), String> {
+    channel
+        .send(AudioStreamEvent::Started {
+            song_id: "renu".to_string(),
+        })
+        .map_err(|e| e.to_string())?;
+
+    let mut buffer = vec![0u8; CHUNK_SIZE];
+    let mut chunk_id = 0;
+    let mut total_bytes = 0;
+
+    loop {
+        let bytes_read = stdout.read(&mut buffer).map_err(|e| e.to_string())?;
+        if bytes_read == 0 {
+            break;
+        }
+        let chunk_data = buffer[..bytes_read].to_vec();
+        total_bytes += bytes_read;
+
+        channel
+            .send(AudioStreamEvent::Progress {
+                chunk_data,
+                chunk_id,
+                is_last: false,
+            })
+            .map_err(|e| e.to_string())?;
+
+        chunk_id += 1;
+    }
+    channel
+        .send(AudioStreamEvent::Progress {
+            chunk_data: vec![],
+            chunk_id,
+            is_last: true,
+        })
+        .map_err(|e| e.to_string())?;
+    channel
+        .send(AudioStreamEvent::Finished)
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
