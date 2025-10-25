@@ -1,4 +1,4 @@
-use std::{vec};
+use std::vec;
 
 use futures::StreamExt;
 use tauri::ipc::Channel;
@@ -15,7 +15,6 @@ pub async fn stream_from_api(
     let client = reqwest::Client::builder().user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").build().unwrap();
     let response = client.get(url).send().await.map_err(|e| e.to_string())?;
 
-
     let content_type = response
         .headers()
         .get("content-type")
@@ -25,9 +24,8 @@ pub async fn stream_from_api(
 
     let content_length = response.content_length().unwrap_or(0);
 
-
     if content_type.starts_with("text/") {
-        return  Err(format!("Invalid format: {}", content_type));
+        return Err(format!("Invalid format: {}", content_type));
     }
     eprintln!("content_length: {}", content_length);
     let metadata = song::Metadata::new(content_length, content_type, extract_file_name(url));
