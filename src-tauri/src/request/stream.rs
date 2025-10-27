@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 
 use crate::{
-    model::song::{self, AudioStreamEvent, Metadata},
-    request::file,
+    connectors, model::song::{self, AudioStreamEvent, Metadata}, request::file
 };
 
 use tauri::{ipc::Channel, AppHandle, Emitter, Manager};
@@ -50,6 +49,22 @@ pub async fn start(
     Ok(metadata)
 }
 
+#[tauri::command]
+pub async fn start_stream(video_url: String, channel: Channel<AudioStreamEvent>) -> Result<(), String> {
+    let mut child = connectors::stream::save_audio(&video_url)?;
+
+    let mut stdout = child.stdout.take().ok_or("Failed to capture")?;
+
+
+    tokio::task::spawn_blocking(move || {
+        if let Err(e) =  read_stdout(stdout, &channel) {
+            eprintln!("Error in stdout: {}", e);
+        }
+    });
+
+    Ok(())
+}
+
 // All the priv functions
 
 /// File Path = CACHE/video_id.mp3
@@ -75,4 +90,21 @@ fn get_video_id(music_url: &str) -> Option<String> {
         .nth(1)
         .and_then(|s| s.split('&').next())
         .map(|s| s.to_string())
+}
+
+
+fn read_stdout(stdout: std::process::ChildStdout, channel: &Channel<AudioStreamEvent>) -> Result<(), String> {
+
+    channel.send(AudioStreamEvent::Started { song_id: "test".to_string() }).map_err(|e| e.to_string())?;
+
+    let mut buffer = vec![0u8; CHUNK_SIZE];
+    let mut chunk_id = 0;
+    // let mut total_size = 0;
+
+    loop {
+        
+    }
+
+
+    Ok(())
 }
