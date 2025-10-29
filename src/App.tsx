@@ -1,16 +1,13 @@
 import "./App.css";
-import ChannelPlayer from "./components/ChannelPlayer";
-import LocalPlayer from "./components/LocalPlayer";
-import MediaPlayer from "./components/MediaPlayer";
+import SearchPage from "./components/UI/SearchPage";
 
 function App() {
 
 
   return (
     <div>
-      <LocalPlayer />
-      <ChannelPlayer />
-      <MediaPlayer />
+      {/* <LocalPlayer /> */}
+      <SearchPage/>
     </div>
   )
 }
