@@ -1,6 +1,5 @@
 use rustypipe::model::{traits::YtEntity, MusicItem, Thumbnail};
 
-
 pub mod request;
 pub mod stream;
 
@@ -27,7 +26,6 @@ impl Song {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
