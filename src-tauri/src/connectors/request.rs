@@ -29,6 +29,7 @@ pub async fn get_song_info(app: AppHandle, video_id: String) -> Result<String, S
 /// There is a bug in this function
 /// TODO: Change the player usage to music track
 #[tauri::command]
+#[allow(dead_code)]
 pub async fn get_track_thumbnail(
     app: AppHandle,
     video_id: String,
@@ -41,11 +42,6 @@ pub async fn get_track_thumbnail(
         .await
         .map_err(|e| e.to_string())?;
     dbg!(&track.track.cover);
-
-    if let Err(e) = super::stream::start_yt_dlp() {
-        eprintln!("Error in starting yt-dlp: {}", e);
-        return Err(e);
-    }
 
     if track.track.cover.len() > 0 {
         Ok(Some(track.track.cover))
