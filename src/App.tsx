@@ -1,6 +1,7 @@
 import "./App.css";
 import ChannelPlayer from "./components/ChannelPlayer";
 import LocalPlayer from "./components/LocalPlayer";
+import MediaPlayer from "./components/MediaPlayer";
 
 function App() {
 
@@ -9,6 +10,7 @@ function App() {
     <div>
       <LocalPlayer />
       <ChannelPlayer />
+      <MediaPlayer />
     </div>
   )
 }

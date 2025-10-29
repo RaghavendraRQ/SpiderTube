@@ -233,9 +233,9 @@ export default function ChannelPlayer() {
             
             // Invoke streaming
             try {
-            const metadata = await invoke<Metadata>("stream_song", { 
+            const metadata = await invoke<Metadata>("start_stream", { 
                 videoUrl: url, 
-                onEvent: audioChannel 
+                channel: audioChannel 
             });
             console.log("📋 Metadata:", metadata);
             metadataRef.current = metadata;
