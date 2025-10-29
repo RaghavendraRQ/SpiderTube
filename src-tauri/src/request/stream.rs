@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{io::Read, path::PathBuf};
 
 use crate::{
     connectors,
@@ -56,9 +56,11 @@ pub async fn start_stream(
     video_url: String,
     channel: Channel<AudioStreamEvent>,
 ) -> Result<(), String> {
-    let mut child = connectors::stream::save_audio(&video_url)?;
+    let mut yt_dlp = connectors::stream::save_audio(&video_url)?;
+    let stdout = yt_dlp.stdout.take().ok_or("Failed to capture")?;
 
-    let mut stdout = child.stdout.take().ok_or("Failed to capture")?;
+    let mut ffmpeg = connectors::stream::ffmpeg()?;
+    let mut ffmpeg_stdin = ffmpeg.stdin.take().ok_or("Failed to read")?;
 
     tokio::task::spawn_blocking(move || {
         if let Err(e) = read_stdout(stdout, &channel) {
@@ -97,7 +99,7 @@ fn get_video_id(music_url: &str) -> Option<String> {
 }
 
 fn read_stdout(
-    stdout: std::process::ChildStdout,
+    mut stdout: std::process::ChildStdout,
     channel: &Channel<AudioStreamEvent>,
 ) -> Result<(), String> {
     channel
@@ -110,7 +112,29 @@ fn read_stdout(
     let mut chunk_id = 0;
     // let mut total_size = 0;
 
-    loop {}
+    loop {
+        let bytes_read = stdout.read(&mut buffer)
+                                .map_err(|e| e.to_string())?;
+
+        if bytes_read == 0 {
+            break;
+        }
+        let chunk_data = buffer[..bytes_read].to_vec();
+        channel.send(AudioStreamEvent::Progress { chunk_data, chunk_id, is_last: false })
+               .map_err(|e| e.to_string())?;
+        
+        // Implement Cache here 
+
+        chunk_id += 1;
+    }
+    channel.send(AudioStreamEvent::Finished).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn pipe_ffmpeg(
+    mut stdout: std::process::ChildStdout,
+    mut stdin: std::process::ChildStdin,
+) -> Result<(), String> {
 
     Ok(())
 }

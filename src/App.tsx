@@ -1,4 +1,5 @@
 import "./App.css";
+import ChannelPlayer from "./components/ChannelPlayer";
 import LocalPlayer from "./components/LocalPlayer";
 
 function App() {
@@ -7,6 +8,7 @@ function App() {
   return (
     <div>
       <LocalPlayer />
+      <ChannelPlayer />
     </div>
   )
 }
