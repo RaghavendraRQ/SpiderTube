@@ -18,13 +18,6 @@ pub struct Metadata {
 }
 
 #[derive(Clone, serde::Serialize)]
-pub struct AudioChunk {
-    pub data: Vec<u8>,
-    pub is_last: bool,
-    pub index: usize,
-}
-
-#[derive(Clone, serde::Serialize)]
 #[serde(
     rename_all = "PascalCase",
     rename_all_fields = "camelCase",
@@ -62,16 +55,6 @@ impl Metadata {
             size,
             mime_type,
             filename,
-        }
-    }
-}
-
-impl AudioChunk {
-    pub fn new(data: Vec<u8>, is_last: bool, index: usize) -> Self {
-        Self {
-            data,
-            is_last,
-            index,
         }
     }
 }
