@@ -39,7 +39,7 @@ export default function ChannelPlayer() {
 
     async function SetUpChannel() {
         const audioChannel = new Channel<AudioStreamEvent>()
-        const metadata = await invoke<Metadata>("stream_song", { videoUrl: url, onEvent: audioChannel });
+        const metadata = await invoke<Metadata>("start_stream", { videoUrl: url, channel: audioChannel });
 
         console.log("Metadata:", metadata);
 

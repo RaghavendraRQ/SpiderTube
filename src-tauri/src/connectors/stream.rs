@@ -22,6 +22,24 @@ pub fn save_audio(video_url: &str) -> Result<std::process::Child, String> {
     Ok(child)
 }
 
+pub fn ffmpeg() -> Result<std::process::Child, String> {
+    let child = Command::new("ffmpeg")
+        .args([
+            "-i", "pipe:0",
+            "-f", "mp3",
+            "-codec:a", "libmp3lame",
+            "-b:a", "192k",
+            "-",
+        ])
+        .stdout(Stdio::piped())
+        .stdin(Stdio::piped())
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    eprint!("ffmpeg started");
+    Ok(child)
+}
+
 pub(super) fn get_stream_url(video_url: &str) -> Result<Option<String>, String> {
     let output = Command::new("yt-dlp")
         .arg("-f")
