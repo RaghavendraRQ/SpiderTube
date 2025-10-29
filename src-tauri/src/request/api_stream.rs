@@ -7,7 +7,10 @@ use crate::model::song;
 
 const CHUNK_SIZE: usize = 512 * 1024;
 
+/// This can be used for free stream api's for tesiting any new changes in the streaming logic
+/// Maybe removed in future
 #[tauri::command]
+#[allow(dead_code)]
 pub async fn stream_from_api(
     url: &str,
     on_event: Channel<song::AudioStreamEvent>,

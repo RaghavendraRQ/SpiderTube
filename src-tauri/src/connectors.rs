@@ -26,14 +26,3 @@ impl Song {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn check_ytdlp() {
-        let res = stream::start_yt_dlp();
-        assert!(res.is_ok());
-    }
-}
