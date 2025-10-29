@@ -14,7 +14,11 @@ type AudioStreamEvent =
     }
     | { event: "Finished" }; 
 
-export default function ChannelPlayer() {
+interface MediaPlayerProps {
+    video_id: string;
+}
+
+export default function MediaPlayer({ video_id }: MediaPlayerProps) {
     const [filePath, setFilePath] = useState<string>("");
     const [isPlaying, setIsPlaying] = useState(false);
     const [isBuffering, setIsBuffering] = useState(false);
@@ -28,8 +32,9 @@ export default function ChannelPlayer() {
     const metadataRef = useRef<Metadata | null>(null);
     const totalReceivedRef = useRef(0);
     const lastChunkReceivedRef = useRef(false);
-    
-    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+
+    const defaultId = "F3hHTG7l1mM";
+    const url = `https://music.youtube.com/watch?v=${video_id ? video_id : defaultId}`;
 
     // Process chunks from queue
     const processChunkQueue = () => {

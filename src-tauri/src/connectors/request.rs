@@ -60,7 +60,7 @@ pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Son
         .map_err(|e| e.to_string())?;
     let suggestion = rp
         .query()
-        .search_suggestion("chuttamalle")
+        .search_suggestion(&track_name)
         .await
         .map_err(|e| e.to_string())?;
 
