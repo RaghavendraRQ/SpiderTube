@@ -6,7 +6,7 @@ pub(super) fn start_yt_dlp() -> Result<(), String> {
     Ok(())
 }
 
-pub fn save_audio(video_url: &str) ->  Result<std::process::Child, String> {
+pub fn save_audio(video_url: &str) -> Result<std::process::Child, String> {
     let child = Command::new("yt-dlp")
         .arg("-o")
         .arg("-")
@@ -20,7 +20,6 @@ pub fn save_audio(video_url: &str) ->  Result<std::process::Child, String> {
 
     eprintln!("yt-dlp started");
     Ok(child)
-
 }
 
 pub(super) fn get_stream_url(video_url: &str) -> Result<Option<String>, String> {

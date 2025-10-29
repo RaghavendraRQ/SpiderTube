@@ -8,8 +8,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             request::stream::start,
-            request::stream::get_file_path,
-            connectors::stream_song
+            request::stream::get_file_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
