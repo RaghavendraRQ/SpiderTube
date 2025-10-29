@@ -1,8 +1,5 @@
-### TODO:
-1. Get the innerTube api
-2. Improve the UI
+### Paras Check List
 
-### Easy Improvements
-1. Change the base64 response to direct access
-2. Change the button styling
-3. OnChanging the input the audio should change
+- video_url = youtube video url (full url)
+- stream_url = stream url endpoint corresponding to video_url
+- video_id = id alone of the url 

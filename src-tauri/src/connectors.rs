@@ -1,7 +1,5 @@
 use rustypipe::model::{traits::YtEntity, MusicItem, Thumbnail};
-use tauri::ipc::Channel;
 
-use crate::model::song::{self, Metadata};
 
 pub mod request;
 pub mod stream;
@@ -29,6 +27,7 @@ impl Song {
         }
     }
 }
+
 
 #[cfg(test)]
 mod tests {
