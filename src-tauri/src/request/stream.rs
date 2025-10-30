@@ -1,6 +1,5 @@
 use std::{
-    io::{self, Read},
-    path::PathBuf,
+    fs::{File, OpenOptions}, io::{self, Read}, path::PathBuf, str::Bytes
 };
 
 use crate::{
@@ -15,9 +14,11 @@ const CHUNK_SIZE: usize = 1024 * 1024;
 // Tauri Commands will go here
 #[tauri::command]
 pub async fn start(app: AppHandle, video_url: String) -> Option<PathBuf> {
-    if let Some(path) = get_file_path(app, &video_url).expect("Can't get the file path") {
+    if let Some(path) = get_file_path(&app, &video_url).expect("Can't get the file path") {
         return Some(path);
     }
+    let bytes = vec![0, 0, 0];
+    save_audio(&app, video_url, bytes);
     None
 }
 
@@ -48,7 +49,7 @@ pub async fn start_stream(
 /// File Path = CACHE/video_id.mp3
 
 #[tauri::command]
-pub fn get_file_path(app: AppHandle, video_url: &str) -> Result<Option<PathBuf>, String> {
+pub fn get_file_path(app: &AppHandle, video_url: &str) -> Result<Option<PathBuf>, String> {
     let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
     let video_id = get_video_id(video_url).unwrap_or("temp".to_string());
 
@@ -82,6 +83,7 @@ async fn stream_stout(
         }
     });
 
+
     tokio::task::spawn_blocking(move || {
         let mut buffer = [0u8; CHUNK_SIZE];
         let mut chunk_id = 0;
@@ -110,4 +112,14 @@ async fn stream_stout(
     pipe_task.await.map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+
+async fn save_audio(app: &AppHandle, video_url: String, bytes: Vec<u8>) -> Result<(), String> {
+    if let Some(path) = get_file_path(app, &video_url).map_err(|e| e.to_string())? {
+        Ok(())
+    } else {
+        // Create a file and save the bytes
+        todo!()
+    }
 }

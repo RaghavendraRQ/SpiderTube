@@ -61,7 +61,6 @@ export default function MediaPlayer({ video_id }: MediaPlayerProps) {
             const chunk = chunkQueueRef.current.shift()!;
             isAppendingRef.current = true;
             sourceBuffer.appendBuffer(chunk);
-            console.log(`📦 Appended chunk (${chunk.length} bytes), ${chunkQueueRef.current.length} remaining in queue`);
         } catch (error) {
             console.error("Error appending buffer:", error);
             isAppendingRef.current = false;
@@ -80,7 +79,6 @@ export default function MediaPlayer({ video_id }: MediaPlayerProps) {
             const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
             sourceBufferRef.current = sourceBuffer;
             
-            console.log("✅ SourceBuffer created:", mimeType);
 
             sourceBuffer.addEventListener("updateend", () => {
                 isAppendingRef.current = false;
@@ -119,7 +117,6 @@ export default function MediaPlayer({ video_id }: MediaPlayerProps) {
         if (!audio) return;
 
         const handleCanPlay = () => {
-            console.log("✅ Can play - enough data buffered");
             setIsBuffering(false);
             
             // Auto-play when ready
@@ -130,7 +127,6 @@ export default function MediaPlayer({ video_id }: MediaPlayerProps) {
         };
 
         const handleWaiting = () => {
-            console.log("⏳ Waiting for more data...");
             setIsBuffering(true);
         };
 
@@ -197,7 +193,6 @@ export default function MediaPlayer({ video_id }: MediaPlayerProps) {
             audioChannel.onmessage = (message) => {
                 switch (message.event) {
                     case "Started":
-                        console.log("🎵 Stream started:", message.data.songId);
                         break;
                         
                     case "Progress":
@@ -214,7 +209,6 @@ export default function MediaPlayer({ video_id }: MediaPlayerProps) {
                             setProgress(Math.round(progressPercent));
                         }
                         
-                        console.log(`📥 Chunk ${message.data.chunkId} (${chunkData.length} bytes)${message.data.isLast ? ' [LAST]' : ''}`);
                         
                         // Mark if this is the last chunk
                         if (message.data.isLast) {

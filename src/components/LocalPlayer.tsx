@@ -1,13 +1,13 @@
 import {BaseDirectory, readFile} from "@tauri-apps/plugin-fs";
-import { invoke } from "@tauri-apps/api/core";
 
+interface LocalPlayerProps {
+    video_id: string
+}
 
-export default function LocalPlayer() {
+export default function LocalPlayer({video_id}: LocalPlayerProps) {
     
     const player = async function () {
-        const file_path = await invoke<string>("get_file_path", { musicUrl: "https://www.youtube.com/watch?v=5vsOv_bcnhs" });
-        console.log("File path:", file_path);
-        const fileData = await readFile(file_path, { baseDir: BaseDirectory.AppCache });
+        const fileData = await readFile(video_id, { baseDir: BaseDirectory.AppCache });
 
         const blob = new Blob([fileData], { type: "audio/mpeg" });
         const url = URL.createObjectURL(blob);
