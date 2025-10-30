@@ -3,11 +3,14 @@ import { useState } from "react";
 import { Song } from "../../models/song";
 import SearchItem from "./SearchItem";
 import MediaPlayer from "../MediaPlayer";
+import { checkCacheDirectory } from "../../models/cache";
+import LocalPlayer from "../LocalPlayer";
 
 export default function SearchPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResult, setSearhResult] = useState<Song[] | null>();
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+    const [isCached, setIsCached] = useState<boolean>(false);
 
     async function getSearchResult() {
         if (searchTerm.length <= 2) {
@@ -22,8 +25,9 @@ export default function SearchPage() {
         }
     }
 
-    const handleSongSelect = (song: Song) => {
+    const handleSongSelect = async (song: Song) => {
         setSelectedSong(song);
+        setIsCached(await checkCacheDirectory(song.id));
         console.log('selectedSong', selectedSong?.id);
         // TODO: Add play logic or navigation here
     };
@@ -70,7 +74,13 @@ export default function SearchPage() {
                 ))}
             </div>
         </div>
-             {selectedSong && <MediaPlayer video_id={selectedSong.id} />}
+             {selectedSong && (
+                isCached ? (
+                    <LocalPlayer video_id={selectedSong.id}/>
+                ) : (
+                    <MediaPlayer video_id={selectedSong.id} />
+                )
+             )}
         </div>
     )
 }

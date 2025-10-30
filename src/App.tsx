@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
 
-  const navigator = useNavigate();
+  const navigator = useNavigate() ;
 
   useEffect(() => {
     setNavigateFunction(navigator);
@@ -40,7 +40,7 @@ function App() {
 
   return (
     <div>
-      <LocalPlayer />
+      <h1>Welcome to SpiderTube</h1>
     </div>
   )
 }
