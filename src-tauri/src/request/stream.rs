@@ -12,13 +12,13 @@ use tauri::{ipc::Channel, AppHandle, Manager};
 const CHUNK_SIZE: usize = 1024 * 1024;
 
 // Tauri Commands will go here
+
+/// Improvise this fn to respond with file_path or stream
 #[tauri::command]
 pub async fn start(app: AppHandle, video_url: String) -> Option<PathBuf> {
     if let Some(path) = get_file_path(&app, &video_url).expect("Can't get the file path") {
         return Some(path);
     }
-    let bytes = vec![0, 0, 0];
-    save_audio(&app, video_url, bytes).await.expect("falied to save");
     None
 }
 
@@ -103,11 +103,11 @@ async fn stream_stout(
     });
 
 
-    tokio::task::spawn_blocking(move || {
+    let channel_handle = tokio::task::spawn_blocking(move || {
 
         channel.send(AudioStreamEvent::Started { song_id: "song".to_string()}).map_err(|e| e.to_string()).expect("error");
 
-        let mut cache_file = match File::create(cache_path) {
+        let cache_file = match File::create(cache_path) {
             Ok(file) => Some(file),
             Err(e) => {
                 eprintln!("Error in creating cache_path: {}", e);
@@ -133,39 +133,42 @@ async fn stream_stout(
                 .expect("Err in sending");
 
             // Implement Cache here
-            if let  Some(ref mut file) = cache_file {
-                if let Err(e) = file.write_all(&chunk_data) {
-                    eprintln!("Error in writing to cache_file: {}", e);
-                    cache_file = None
-                } 
-            } 
+            // if let  Some(ref mut file) = cache_file {
+            //     if let Err(e) = file.write_all(&chunk_data) {
+            //         eprintln!("Error in writing to cache_file: {}", e);
+            //         cache_file = None
+            //     } 
+            // } 
+            cache_song(cache_file.as_ref(), Some(&chunk_data), false)?;
+            
 
             chunk_id += 1;
         }
 
-        if let Some(mut file) = cache_file {
-            if let Err(e) = file.flush() {
-                eprintln!("Error in flusing to cach_file: {}", e);
-            }
-        }
+        cache_song(cache_file.as_ref(), None, true)?;
+        
         eprintln!("cached completed");
 
         channel.send(AudioStreamEvent::Finished).unwrap();
 
+        Ok::<(), String>(())
+
     });
 
     pipe_task.await.map_err(|e| e.to_string())?;
+    channel_handle.await.map_err(|e| e.to_string())?.map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 
-async fn save_audio(app: &AppHandle, video_url: String, bytes: Vec<u8>) -> Result<(), String> {
-    if let Some(path) = get_file_path(app, &video_url).map_err(|e| e.to_string())? {
-        dbg!(path);
-        Ok(())
-    } else {
-        // Create a file and save the bytes
-        todo!()
-    }
+fn cache_song(mut cache_file: Option<&File>,  buffer: Option<&Vec<u8>>, flush: bool) -> Result<(), String> {
+    if let Some(ref mut file) = cache_file {
+        if flush {
+            file.flush().map_err(|e| e.to_string())?;
+        } else {
+            file.write_all(buffer.expect("Can't write to file")).map_err(|e| e.to_string())?;
+        }
+   }
+    Ok(())
 }
