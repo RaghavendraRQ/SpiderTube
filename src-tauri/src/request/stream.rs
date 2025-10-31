@@ -1,5 +1,5 @@
 use std::{
-    fs::{File, OpenOptions}, io::{self, Read}, path::PathBuf, str::Bytes
+    fs::File, io::{self, Read, Write}, path::PathBuf
 };
 
 use crate::{
@@ -18,12 +18,13 @@ pub async fn start(app: AppHandle, video_url: String) -> Option<PathBuf> {
         return Some(path);
     }
     let bytes = vec![0, 0, 0];
-    save_audio(&app, video_url, bytes);
+    save_audio(&app, video_url, bytes).await.expect("falied to save");
     None
 }
 
 #[tauri::command]
 pub async fn start_stream(
+    app: AppHandle,
     video_url: String,
     channel: Channel<AudioStreamEvent>,
 ) -> Result<Metadata, String> {
@@ -35,8 +36,14 @@ pub async fn start_stream(
     let ffmpeg_stdin = ffmpeg.stdin.take().ok_or("Failed to read")?;
     let ff_stdout = ffmpeg.stdout.take().ok_or("Faied to open stdout")?;
 
+
+    // Cache Path
+    let cache_path = get_create_file_path(&app, &video_url).map_err(|e| e.to_string())?;
+    // let cache_path = cache_path.unwrap_or_default();
+    
+
     tokio::spawn(async move {
-        if let Err(e) = stream_stout(stdout, ffmpeg_stdin, ff_stdout, channel.clone()).await {
+        if let Err(e) = stream_stout(stdout, ffmpeg_stdin, ff_stdout, cache_path,channel.clone()).await {
             eprintln!("Error in stdout: {}", e);
         }
     });
@@ -46,8 +53,8 @@ pub async fn start_stream(
 
 // All the priv functions
 
+/// Get the file path if it exsists
 /// File Path = CACHE/video_id.mp3
-
 #[tauri::command]
 pub fn get_file_path(app: &AppHandle, video_url: &str) -> Result<Option<PathBuf>, String> {
     let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
@@ -60,6 +67,16 @@ pub fn get_file_path(app: &AppHandle, video_url: &str) -> Result<Option<PathBuf>
         return Ok(Some(file_path));
     }
     Ok(None)
+}
+
+/// Get the file path to be created
+fn get_create_file_path(app: &AppHandle, video_url: &str) -> Result<PathBuf, String> {
+    let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
+    let video_id = get_video_id(video_url).unwrap_or("temp".to_string());
+
+    let mut file_path = cache.join(video_id);
+    file_path.set_extension("mp3");
+    Ok(file_path)
 }
 
 // Same logic for youtube and music.youtube
@@ -75,8 +92,10 @@ async fn stream_stout(
     mut yt_stdout: std::process::ChildStdout,
     mut ff_stdin: std::process::ChildStdin,
     mut ff_stdout: std::process::ChildStdout,
+    cache_path: PathBuf,
     channel: Channel<AudioStreamEvent>,
 ) -> Result<(), String> {
+    // yt-dlp stdout ---> ffmpeg stdin in seperate blocking thread.
     let pipe_task = tokio::task::spawn_blocking(move || {
         if let Err(e) = io::copy(&mut yt_stdout, &mut ff_stdin) {
             eprintln!("Error in coping: {}", e);
@@ -85,6 +104,18 @@ async fn stream_stout(
 
 
     tokio::task::spawn_blocking(move || {
+
+        channel.send(AudioStreamEvent::Started { song_id: "song".to_string()}).map_err(|e| e.to_string()).expect("error");
+
+        let mut cache_file = match File::create(cache_path) {
+            Ok(file) => Some(file),
+            Err(e) => {
+                eprintln!("Error in creating cache_path: {}", e);
+                None
+            }
+        };
+
+        eprintln!("cached started");
         let mut buffer = [0u8; CHUNK_SIZE];
         let mut chunk_id = 0;
         while let Ok(bytes_read) = ff_stdout.read(&mut buffer) {
@@ -94,7 +125,7 @@ async fn stream_stout(
             let chunk_data = buffer[..bytes_read].to_vec();
             channel
                 .send(AudioStreamEvent::Progress {
-                    chunk_data,
+                    chunk_data: chunk_data.clone(),
                     chunk_id,
                     is_last: false,
                 })
@@ -102,11 +133,25 @@ async fn stream_stout(
                 .expect("Err in sending");
 
             // Implement Cache here
+            if let  Some(ref mut file) = cache_file {
+                if let Err(e) = file.write_all(&chunk_data) {
+                    eprintln!("Error in writing to cache_file: {}", e);
+                    cache_file = None
+                } 
+            } 
 
             chunk_id += 1;
         }
 
+        if let Some(mut file) = cache_file {
+            if let Err(e) = file.flush() {
+                eprintln!("Error in flusing to cach_file: {}", e);
+            }
+        }
+        eprintln!("cached completed");
+
         channel.send(AudioStreamEvent::Finished).unwrap();
+
     });
 
     pipe_task.await.map_err(|e| e.to_string())?;
@@ -117,6 +162,7 @@ async fn stream_stout(
 
 async fn save_audio(app: &AppHandle, video_url: String, bytes: Vec<u8>) -> Result<(), String> {
     if let Some(path) = get_file_path(app, &video_url).map_err(|e| e.to_string())? {
+        dbg!(path);
         Ok(())
     } else {
         // Create a file and save the bytes

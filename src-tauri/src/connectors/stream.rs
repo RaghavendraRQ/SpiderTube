@@ -8,7 +8,7 @@ pub fn save_audio(video_url: &str) -> Result<std::process::Child, String> {
         .arg("--no-warnings")
         .arg(video_url)
         .stdout(Stdio::piped())
-        .stderr(Stdio::inherit())
+        .stderr(Stdio::null())
         .spawn()
         .map_err(|e| e.to_string())?;
 
