@@ -7,7 +7,8 @@ interface LocalPlayerProps {
 export default function LocalPlayer({video_id}: LocalPlayerProps) {
     
     const player = async function () {
-        const fileData = await readFile(video_id, { baseDir: BaseDirectory.AppCache });
+        const file = video_id + ".mp3"
+        const fileData = await readFile(file, { baseDir: BaseDirectory.AppCache });
 
         const blob = new Blob([fileData], { type: "audio/mpeg" });
         const url = URL.createObjectURL(blob);
