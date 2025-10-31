@@ -1,6 +1,12 @@
 use std::{
-    fs::File, io::{self, Read, Write}, path::PathBuf
+    io::{self, Read}, path::PathBuf
 };
+
+use tokio::{
+    fs::File, io::AsyncWriteExt, sync::broadcast, task
+};
+
+use bytes::Bytes;
 
 use crate::{
     connectors,
@@ -9,7 +15,7 @@ use crate::{
 
 use tauri::{ipc::Channel, AppHandle, Manager};
 
-const CHUNK_SIZE: usize = 1024 * 1024;
+const CHUNK_SIZE: usize = 256 * 1024; // 256 Bytes 
 
 // Tauri Commands will go here
 
@@ -29,10 +35,13 @@ pub async fn start_stream(
     channel: Channel<AudioStreamEvent>,
 ) -> Result<Metadata, String> {
     let metadata = Metadata::new(100, "audio/mpeg".to_string(), video_url.clone());
-    let mut yt_dlp = connectors::stream::save_audio(&video_url)?;
-    let stdout = yt_dlp.stdout.take().ok_or("Failed to capture")?;
 
+    // Create subprocess
+    let mut yt_dlp = connectors::stream::yt_dlp(&video_url)?;
     let mut ffmpeg = connectors::stream::ffmpeg()?;
+
+    // Take the handles for both
+    let stdout = yt_dlp.stdout.take().ok_or("Failed to capture")?;
     let ffmpeg_stdin = ffmpeg.stdin.take().ok_or("Failed to read")?;
     let ff_stdout = ffmpeg.stdout.take().ok_or("Faied to open stdout")?;
 
@@ -43,8 +52,11 @@ pub async fn start_stream(
     
 
     tokio::spawn(async move {
-        if let Err(e) = stream_stout(stdout, ffmpeg_stdin, ff_stdout, cache_path,channel.clone()).await {
+        if let Err(e) = stream_and_cache(stdout, ffmpeg_stdin, ff_stdout, cache_path,channel.clone()).await {
             eprintln!("Error in stdout: {}", e);
+        } else {
+            let _ = yt_dlp.wait();
+            let _ = ffmpeg.wait();
         }
     });
 
@@ -88,87 +100,75 @@ fn get_video_id(video_url: &str) -> Option<String> {
         .map(|s| s.to_string())
 }
 
-async fn stream_stout(
+async fn stream_and_cache(
     mut yt_stdout: std::process::ChildStdout,
     mut ff_stdin: std::process::ChildStdin,
     mut ff_stdout: std::process::ChildStdout,
     cache_path: PathBuf,
     channel: Channel<AudioStreamEvent>,
-) -> Result<(), String> {
+) -> io::Result<()> {
+
     // yt-dlp stdout ---> ffmpeg stdin in seperate blocking thread.
-    let pipe_task = tokio::task::spawn_blocking(move || {
-        if let Err(e) = io::copy(&mut yt_stdout, &mut ff_stdin) {
-            eprintln!("Error in coping: {}", e);
-        }
+    let pipe_task = task::spawn_blocking(move || -> io::Result<()>{
+        io::copy(&mut yt_stdout, &mut ff_stdin)?;
+        drop(ff_stdin);
+        Ok(())
     });
 
+    // ffmpeg -> async broadcast
+    let (tx, _) = broadcast::channel::<Bytes>(32);
+    let tx_clone =tx.clone();
 
-    let channel_handle = tokio::task::spawn_blocking(move || {
-
-        channel.send(AudioStreamEvent::Started { song_id: "song".to_string()}).map_err(|e| e.to_string()).expect("error");
-
-        let cache_file = match File::create(cache_path) {
-            Ok(file) => Some(file),
-            Err(e) => {
-                eprintln!("Error in creating cache_path: {}", e);
-                None
-            }
-        };
-
-        eprintln!("cached started");
+    // Producer Reading from stdout
+    let read_task = task::spawn_blocking(move || -> io::Result<()> {
         let mut buffer = [0u8; CHUNK_SIZE];
-        let mut chunk_id = 0;
-        while let Ok(bytes_read) = ff_stdout.read(&mut buffer) {
-            if bytes_read == 0 {
+        while let Ok(size)  = ff_stdout.read(&mut buffer) {
+            if size == 0 { break; }
+            let chunk = Bytes::copy_from_slice(&buffer[..size]);
+            if tx_clone.send(chunk).is_err() {
                 break;
             }
-            let chunk_data = buffer[..bytes_read].to_vec();
-            channel
-                .send(AudioStreamEvent::Progress {
-                    chunk_data: chunk_data.clone(),
-                    chunk_id,
-                    is_last: false,
-                })
-                .map_err(|e| e.to_string())
-                .expect("Err in sending");
-
-            // Implement Cache here
-            // if let  Some(ref mut file) = cache_file {
-            //     if let Err(e) = file.write_all(&chunk_data) {
-            //         eprintln!("Error in writing to cache_file: {}", e);
-            //         cache_file = None
-            //     } 
-            // } 
-            cache_song(cache_file.as_ref(), Some(&chunk_data), false)?;
-            
-
-            chunk_id += 1;
         }
 
-        cache_song(cache_file.as_ref(), None, true)?;
-        
-        eprintln!("cached completed");
-
-        channel.send(AudioStreamEvent::Finished).unwrap();
-
-        Ok::<(), String>(())
-
+        Ok(())
     });
 
-    pipe_task.await.map_err(|e| e.to_string())?;
-    channel_handle.await.map_err(|e| e.to_string())?.map_err(|e| e.to_string())?;
 
-    Ok(())
-}
-
-
-fn cache_song(mut cache_file: Option<&File>,  buffer: Option<&Vec<u8>>, flush: bool) -> Result<(), String> {
-    if let Some(ref mut file) = cache_file {
-        if flush {
-            file.flush().map_err(|e| e.to_string())?;
-        } else {
-            file.write_all(buffer.expect("Can't write to file")).map_err(|e| e.to_string())?;
+    // Cache file Reciever -> Async Consumer
+    let mut cache_rx = tx.subscribe();
+    let file_stream = tokio::spawn(async move {
+        let mut cache_file = File::create(cache_path).await?;
+        while let Ok(chunk) = cache_rx.recv().await {
+            cache_file.write_all(&chunk).await?;
         }
-   }
+        cache_file.flush().await?;
+        Ok::<_, io::Error>(())
+    });
+
+    // Channel Stream -> Async Consumer
+    let mut channel_rx = tx.subscribe();
+    let frontend_stream = task::spawn(async move {
+        let mut chunk_id = 0;
+
+        // TODO: Handle error properly (Use anyhow)
+        let _ = channel.send(AudioStreamEvent::Started { song_id: "song".to_string()});
+        while let Ok(chunk) = channel_rx.recv().await {
+            chunk_id += 1;
+            let _ = channel
+                .send(AudioStreamEvent::Progress {
+                    chunk_data: chunk.to_vec(), 
+                    chunk_id,
+                    is_last: false,
+                });
+        }
+        let _ =channel.send(AudioStreamEvent::Finished);
+        Ok::<_, io::Error>(())
+    });
+
+    // Wait for everything
+    let _ = tokio::try_join!(pipe_task, read_task)?;
+    let _ = tokio::try_join!(file_stream, frontend_stream)?;
+
     Ok(())
 }
+
