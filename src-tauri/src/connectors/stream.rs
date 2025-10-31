@@ -1,6 +1,6 @@
 use std::process::{Command, Stdio};
 
-pub fn save_audio(video_url: &str) -> Result<std::process::Child, String> {
+pub fn yt_dlp(video_url: &str) -> Result<std::process::Child, String> {
     let child = Command::new("yt-dlp")
         .arg("-o")
         .arg("-")
