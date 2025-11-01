@@ -52,7 +52,7 @@ pub async fn get_track_thumbnail(
 }
 
 #[tauri::command]
-pub async fn search_result(state: State<'_, AppState>, track_name: String) -> Result<Vec<Song>, TauriError> {
+pub async fn search_result(state: State<'_, AppState>, track_name: String, mut limit: u8) -> Result<Vec<Song>, TauriError> {
     let tracks: MusicSearchResult<MusicItem> = state.rp
         .query()
         .music_search(&track_name, None)
@@ -60,7 +60,6 @@ pub async fn search_result(state: State<'_, AppState>, track_name: String) -> Re
         .map_err(SpideyTubeError::from)?;
 
     let mut res: Vec<Song> = vec![];
-    let mut limit = 10;
 
     for item in tracks.items.items.to_vec().iter() {
         if limit != 0 {

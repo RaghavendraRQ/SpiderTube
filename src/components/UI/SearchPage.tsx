@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
-import { Song } from "../../models/song";
+import { Song, SongType } from "../../models/song";
 import SearchItem from "./SearchItem";
 import MediaPlayer from "../MediaPlayer";
 import { checkCacheDirectory } from "../../models/cache";
@@ -27,7 +27,7 @@ export default function SearchPage() {
             return;
         }
         try {
-            const res = await invoke<Song[]>("search_result", { trackName: searchTerm });
+            const res = await invoke<Song[]>("search_result", { trackName: searchTerm, limit: 20 });
             console.log(res);
             setSearhResult(res);
         } catch (err) {
@@ -95,14 +95,81 @@ export default function SearchPage() {
                 ))}
             </div>
 
-            <div>
-                {searchResult?.map((song) => (
-                    <SearchItem 
-                    key={song.id} 
-                    song={song} 
-                    onSelect={handleSongSelect}
-                    />
-                ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                {/* Tracks Section */}
+                {searchResult?.some(song => song.type === SongType.Track) && (
+                    <div>
+                        <h2 style={{ 
+                            fontSize: '20px', 
+                            fontWeight: '600', 
+                            margin: '16px 0 12px',
+                            color: '#2c3e50' 
+                        }}>
+                            Tracks
+                        </h2>
+                        <div>
+                            {searchResult
+                                .filter(song => song.type === SongType.Track)
+                                .map((song) => (
+                                    <SearchItem key={song.id} song={song} onSelect={handleSongSelect} />
+                                ))
+                            }
+                        </div>
+                    </div>
+                )}
+
+                {/* Albums & Playlists Section */}
+                {searchResult?.some(song => song.type === SongType.Album || song.type === SongType.Playlist) && (
+                    <div>
+                        <h2 style={{ 
+                            fontSize: '20px', 
+                            fontWeight: '600', 
+                            margin: '16px 0 12px',
+                            color: '#2c3e50' 
+                        }}>
+                            Albums & Playlists
+                        </h2>
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                            gap: '16px'
+                        }}>
+                            {searchResult
+                                .filter(song => song.type === SongType.Album || song.type === SongType.Playlist)
+                                .map((song) => (
+                                    <SearchItem key={song.id} song={song} onSelect={handleSongSelect} />
+                                ))
+                            }
+                        </div>
+                    </div>
+                )}
+
+                {/* Artists Section */}
+                {searchResult?.some(song => song.type === SongType.Artist) && (
+                    <div>
+                        <h2 style={{ 
+                            fontSize: '20px', 
+                            fontWeight: '600', 
+                            margin: '16px 0 12px',
+                            color: '#2c3e50' 
+                        }}>
+                            Artists
+                        </h2>
+                        <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '4px 0' }}>
+                            {searchResult
+                                .filter(song => song.type === SongType.Artist)
+                                .map((song) => (
+                                    <div key={song.id} style={{ minWidth: '200px' }}>
+                                        <SearchItem song={song} onSelect={handleSongSelect} />
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                )}
+
+
             </div>
         </div>
              {selectedSong && (
