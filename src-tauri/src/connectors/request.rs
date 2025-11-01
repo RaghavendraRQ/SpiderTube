@@ -1,25 +1,25 @@
+use std::path::PathBuf;
+
 use rustypipe::{
     client::RustyPipe,
     model::{MusicItem, MusicSearchResult, Thumbnail},
 };
-use tauri::{AppHandle, Manager};
+use tauri::State;
 
-use crate::error::{self, SpideyTubeError, TauriError};
+use crate::{AppState, error::{self, SpideyTubeError, TauriError}};
 
 use super::Song;
 
-fn get_rustypipe(app: &AppHandle) -> error::Result<RustyPipe> {
+pub fn get_rustypipe(path: PathBuf) -> error::Result<RustyPipe> {
     let rp = RustyPipe::builder()
-        .storage_dir(app.path().app_cache_dir().unwrap())
+        .storage_dir(path)
         .build()?;
     Ok(rp)
 }
 
 #[tauri::command]
-pub async fn get_song_info(app: AppHandle, video_id: String) -> Result<String, TauriError> {
-    let rp = get_rustypipe(&app);
-    let metadata = rp
-        .map_err(TauriError::from)?
+pub async fn get_song_info(state: State<'_, AppState>, video_id: String) -> Result<String, TauriError> {
+    let metadata = state.rp
         .query()
         .music_details(video_id)
         .await
@@ -34,13 +34,10 @@ pub async fn get_song_info(app: AppHandle, video_id: String) -> Result<String, T
 #[allow(dead_code)]
 #[tauri::command]
 pub async fn get_track_thumbnail(
-    app: AppHandle,
+    state: State<'_, AppState>,
     video_id: String,
 ) -> Result<Option<Vec<Thumbnail>>, TauriError> {
-    let rp = get_rustypipe(&app);
-
-    let track = rp
-        .map_err(TauriError::from)?
+    let track = state.rp
         .query()
         .music_details(video_id)
         .await
@@ -55,10 +52,8 @@ pub async fn get_track_thumbnail(
 }
 
 #[tauri::command]
-pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Song>, TauriError> {
-    let rp = get_rustypipe(&app);
-    let tracks: MusicSearchResult<MusicItem> = rp
-        .map_err(TauriError::from)?
+pub async fn search_result(state: State<'_, AppState>, track_name: String) -> Result<Vec<Song>, TauriError> {
+    let tracks: MusicSearchResult<MusicItem> = state.rp
         .query()
         .music_search(&track_name, None)
         .await
@@ -79,11 +74,10 @@ pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Son
 
 #[tauri::command]
 pub async fn get_search_suggestions(
-    app: AppHandle,
+    state: State<'_, AppState>,
     search_buffer: &str,
 ) -> Result<Vec<String>, TauriError> {
-    let rp = get_rustypipe(&app).map_err(TauriError::from)?;
-    let suggestions = rp
+    let suggestions = state.rp
         .query()
         .search_suggestion(search_buffer)
         .await
