@@ -1,4 +1,5 @@
 mod connectors;
+mod error;
 mod model;
 mod request;
 

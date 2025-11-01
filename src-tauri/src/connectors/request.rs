@@ -4,23 +4,26 @@ use rustypipe::{
 };
 use tauri::{AppHandle, Manager};
 
+use crate::error::{self, SpideyTubeError, TauriError};
+
 use super::Song;
 
-fn get_rustypipe(app: &AppHandle) -> RustyPipe {
-    RustyPipe::builder()
+fn get_rustypipe(app: &AppHandle) -> error::Result<RustyPipe>{
+    let rp = RustyPipe::builder()
         .storage_dir(app.path().app_cache_dir().unwrap())
-        .build()
-        .unwrap()
+        .build()?;
+    Ok(rp)
 }
 
 #[tauri::command]
-pub async fn get_song_info(app: AppHandle, video_id: String) -> Result<String, String> {
+pub async fn get_song_info(app: AppHandle, video_id: String) -> Result<String, TauriError> {
     let rp = get_rustypipe(&app);
     let metadata = rp
+        .map_err(TauriError::from)?
         .query()
         .music_details(video_id)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(SpideyTubeError::from)?;
 
     dbg!(&metadata);
     Ok(metadata.track.id)
@@ -33,14 +36,15 @@ pub async fn get_song_info(app: AppHandle, video_id: String) -> Result<String, S
 pub async fn get_track_thumbnail(
     app: AppHandle,
     video_id: String,
-) -> Result<Option<Vec<Thumbnail>>, String> {
+) -> Result<Option<Vec<Thumbnail>>, TauriError> {
     let rp = get_rustypipe(&app);
 
     let track = rp
+        .map_err(TauriError::from)?
         .query()
         .music_details(video_id)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(SpideyTubeError::from)?;
     dbg!(&track.track.cover);
 
     if track.track.cover.len() > 0 {
@@ -51,19 +55,15 @@ pub async fn get_track_thumbnail(
 }
 
 #[tauri::command]
-pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Song>, String> {
+pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Song>, TauriError> {
     let rp = get_rustypipe(&app);
     let tracks: MusicSearchResult<MusicItem> = rp
+        .map_err(TauriError::from)?
         .query()
         .music_search(&track_name, None)
         .await
-        .map_err(|e| e.to_string())?;
-    let suggestion = rp
-        .query()
-        .search_suggestion(&track_name)
-        .await
-        .map_err(|e| e.to_string())?;
-
+        .map_err(SpideyTubeError::from)?;
+        
     let mut res: Vec<Song> = vec![];
     let mut limit = 10;
 
@@ -74,6 +74,5 @@ pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Son
         }
     }
     // dbg!(tracks.items.items[0..5].to_vec());
-    dbg!(suggestion);
     Ok(res)
 }
