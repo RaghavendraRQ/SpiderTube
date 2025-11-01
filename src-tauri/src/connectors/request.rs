@@ -8,7 +8,7 @@ use crate::error::{self, SpideyTubeError, TauriError};
 
 use super::Song;
 
-fn get_rustypipe(app: &AppHandle) -> error::Result<RustyPipe>{
+fn get_rustypipe(app: &AppHandle) -> error::Result<RustyPipe> {
     let rp = RustyPipe::builder()
         .storage_dir(app.path().app_cache_dir().unwrap())
         .build()?;
@@ -63,7 +63,7 @@ pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Son
         .music_search(&track_name, None)
         .await
         .map_err(SpideyTubeError::from)?;
-        
+
     let mut res: Vec<Song> = vec![];
     let mut limit = 10;
 
@@ -75,4 +75,19 @@ pub async fn search_result(app: AppHandle, track_name: String) -> Result<Vec<Son
     }
     // dbg!(tracks.items.items[0..5].to_vec());
     Ok(res)
+}
+
+#[tauri::command]
+pub async fn get_search_suggestions(
+    app: AppHandle,
+    search_buffer: &str,
+) -> Result<Vec<String>, TauriError> {
+    let rp = get_rustypipe(&app).map_err(TauriError::from)?;
+    let suggestions = rp
+        .query()
+        .search_suggestion(search_buffer)
+        .await
+        .map_err(SpideyTubeError::from)?;
+    // dbg!(&suggestions);
+    Ok(suggestions)
 }

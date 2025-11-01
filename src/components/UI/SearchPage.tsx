@@ -11,6 +11,7 @@ export default function SearchPage() {
     const [searchResult, setSearhResult] = useState<Song[] | null>();
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
     const [isCached, setIsCached] = useState<boolean>(false);
+    const [searchSuggestions, setSearchSuggestions] = useState<string[] | null>(null);
 
     async function getSearchResult() {
         if (searchTerm.length <= 2) {
@@ -23,6 +24,20 @@ export default function SearchPage() {
         } catch (err) {
             console.log('err', err)
         }
+    }
+
+    async function getSearchSuggestions(e: React.ChangeEvent<HTMLInputElement>) {
+        setSearchTerm(e.target.value);
+        if (e.target.value.length <= 2) {
+            return;
+        }
+        try {
+            const res = await invoke<string[]>("get_search_suggestions", { searchBuffer: e.target.value });
+            setSearchSuggestions(res);
+        } catch (err) {
+            console.log('err', err)
+        }
+        
     }
 
     const handleSongSelect = async (song: Song) => {
@@ -41,7 +56,7 @@ export default function SearchPage() {
                     type="text"
                     placeholder="Search for the song"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => getSearchSuggestions(e)}
                     style={{
                         flex: 1,
                         padding: '8px 12px',
@@ -64,6 +79,25 @@ export default function SearchPage() {
                 </button>
             </div>
             
+            <div style={{ marginBottom: '20px' }}>
+                {searchSuggestions?.map((suggestion, index) => (
+                    <div
+                        key={index}
+                        onClick={() => {
+                            setSearchTerm(suggestion);
+                            setSearchSuggestions(null);
+                        }}
+                        style={{
+                            padding: '8px 12px',
+                            borderBottom: '1px solid #eee',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {suggestion}
+                    </div>
+                ))}
+            </div>
+
             <div>
                 {searchResult?.map((song) => (
                     <SearchItem 

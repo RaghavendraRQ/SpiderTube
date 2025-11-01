@@ -10,6 +10,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             request::stream::start,
             request::stream::start_stream,
+            // Rustypipe and yt_dlp
+            connectors::request::get_search_suggestions,
             connectors::request::get_song_info,
             connectors::request::search_result
         ])

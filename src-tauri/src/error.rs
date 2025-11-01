@@ -1,4 +1,3 @@
-
 #[derive(thiserror::Error, Debug)]
 pub enum SpideyTubeError {
     // Network error from reqwest
@@ -15,7 +14,7 @@ pub enum SpideyTubeError {
 
     // Tauri Errors that implements Serialize
     #[error("Tauri Error: {0}")]
-    Tauri(#[from] tauri::Error)
+    Tauri(#[from] tauri::Error),
 }
 
 pub type Result<T> = std::result::Result<T, SpideyTubeError>;
@@ -23,7 +22,7 @@ pub type Result<T> = std::result::Result<T, SpideyTubeError>;
 #[derive(serde::Serialize)]
 pub(crate) struct TauriError {
     code: u16,
-    msg: String
+    msg: String,
 }
 
 impl From<SpideyTubeError> for TauriError {
