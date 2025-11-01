@@ -1,6 +1,7 @@
 use tauri::{AppHandle, Manager};
 
-pub(super) fn clear_cache(app: &AppHandle) -> Result<(), String> {
+#[tauri::command]
+pub fn clear_cache(app: AppHandle) -> Result<(), String> {
     let cache_dir = app.path().app_cache_dir().map_err(|e| e.to_string())?;
 
     if cache_dir.exists() {

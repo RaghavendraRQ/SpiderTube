@@ -1,10 +1,9 @@
 use std::{
-    io::{self, Read}, path::PathBuf
+    io::{self, Read},
+    path::PathBuf,
 };
 
-use tokio::{
-    fs::File, io::AsyncWriteExt, sync::broadcast, task
-};
+use tokio::{fs::File, io::AsyncWriteExt, sync::broadcast, task};
 
 use bytes::Bytes;
 
@@ -15,7 +14,7 @@ use crate::{
 
 use tauri::{ipc::Channel, AppHandle, Manager};
 
-const CHUNK_SIZE: usize = 256 * 1024; // 256 Bytes 
+const CHUNK_SIZE: usize = 256 * 1024; // 256 Bytes
 
 // Tauri Commands will go here
 
@@ -41,18 +40,24 @@ pub async fn start_stream(
     let mut ffmpeg = connectors::stream::ffmpeg()?;
 
     // Take the handles for both
-    let stdout = yt_dlp.stdout.take().ok_or("Failed to capture")?;
+    let yt_dlp_stdout = yt_dlp.stdout.take().ok_or("Failed to capture")?;
     let ffmpeg_stdin = ffmpeg.stdin.take().ok_or("Failed to read")?;
     let ff_stdout = ffmpeg.stdout.take().ok_or("Faied to open stdout")?;
-
 
     // Cache Path
     let cache_path = get_create_file_path(&app, &video_url).map_err(|e| e.to_string())?;
     // let cache_path = cache_path.unwrap_or_default();
-    
 
     tokio::spawn(async move {
-        if let Err(e) = stream_and_cache(stdout, ffmpeg_stdin, ff_stdout, cache_path,channel.clone()).await {
+        if let Err(e) = stream_and_cache(
+            yt_dlp_stdout,
+            ffmpeg_stdin,
+            ff_stdout,
+            cache_path,
+            channel.clone(),
+        )
+        .await
+        {
             eprintln!("Error in stdout: {}", e);
         } else {
             let _ = yt_dlp.wait();
@@ -117,13 +122,15 @@ async fn stream_and_cache(
 
     // ffmpeg -> async broadcast
     let (tx, _) = broadcast::channel::<Bytes>(32);
-    let tx_clone =tx.clone();
+    let tx_clone = tx.clone();
 
     // Producer Reading from stdout
     let read_task = task::spawn_blocking(move || -> io::Result<()> {
         let mut buffer = [0u8; CHUNK_SIZE];
-        while let Ok(size)  = ff_stdout.read(&mut buffer) {
-            if size == 0 { break; }
+        while let Ok(size) = ff_stdout.read(&mut buffer) {
+            if size == 0 {
+                break;
+            }
             let chunk = Bytes::copy_from_slice(&buffer[..size]);
             if tx_clone.send(chunk).is_err() {
                 break;
@@ -132,7 +139,6 @@ async fn stream_and_cache(
 
         Ok(())
     });
-
 
     // Cache file Reciever -> Async Consumer
     let mut cache_rx = tx.subscribe();
@@ -151,17 +157,18 @@ async fn stream_and_cache(
         let mut chunk_id = 0;
 
         // TODO: Handle error properly (Use anyhow)
-        let _ = channel.send(AudioStreamEvent::Started { song_id: "song".to_string()});
+        let _ = channel.send(AudioStreamEvent::Started {
+            song_id: "song".to_string(),
+        });
         while let Ok(chunk) = channel_rx.recv().await {
             chunk_id += 1;
-            let _ = channel
-                .send(AudioStreamEvent::Progress {
-                    chunk_data: chunk.to_vec(), 
-                    chunk_id,
-                    is_last: false,
-                });
+            let _ = channel.send(AudioStreamEvent::Progress {
+                chunk_data: chunk.to_vec(),
+                chunk_id,
+                is_last: false,
+            });
         }
-        let _ =channel.send(AudioStreamEvent::Finished);
+        let _ = channel.send(AudioStreamEvent::Finished);
         Ok::<_, io::Error>(())
     });
 
