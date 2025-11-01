@@ -1,4 +1,3 @@
-
 use rustypipe::model::{traits::YtEntity, MusicItem, Thumbnail};
 
 pub mod request;

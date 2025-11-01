@@ -112,8 +112,9 @@ async fn stream_and_cache(
     cache_path: PathBuf,
     channel: Channel<AudioStreamEvent>,
 ) -> io::Result<()> {
+
     // yt-dlp stdout ---> ffmpeg stdin in seperate blocking thread.
-    let pipe_task = task::spawn_blocking(move || -> io::Result<()> {
+    let pipe_task = task::spawn_blocking(move || -> io::Result<()>{
         io::copy(&mut yt_stdout, &mut ff_stdin)?;
         drop(ff_stdin);
         Ok(())
@@ -177,3 +178,4 @@ async fn stream_and_cache(
 
     Ok(())
 }
+
