@@ -5,13 +5,22 @@ import SearchItem from "./SearchItem";
 import MediaPlayer from "../MediaPlayer";
 import { checkCacheDirectory } from "../../models/cache";
 import LocalPlayer from "../LocalPlayer";
+import { useSearchSuggestions } from "../../hooks/search";
 
 export default function SearchPage() {
-    const [searchTerm, setSearchTerm] = useState("");
     const [searchResult, setSearhResult] = useState<Song[] | null>();
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
     const [isCached, setIsCached] = useState<boolean>(false);
-    const [searchSuggestions, setSearchSuggestions] = useState<string[] | null>(null);
+    // const [searchSuggestions, setSearchSuggestions] = useState<string[] | null>(null);
+
+    const {
+        searchTerm,
+        setSearchTerm,
+        suggestions,
+        error,
+        handleInputChange,
+        setSuggestions,
+    } = useSearchSuggestions();
 
     async function getSearchResult() {
         if (searchTerm.length <= 2) {
@@ -24,20 +33,6 @@ export default function SearchPage() {
         } catch (err) {
             console.log('err', err)
         }
-    }
-
-    async function getSearchSuggestions(e: React.ChangeEvent<HTMLInputElement>) {
-        setSearchTerm(e.target.value);
-        if (e.target.value.length <= 2) {
-            return;
-        }
-        try {
-            const res = await invoke<string[]>("get_search_suggestions", { searchBuffer: e.target.value });
-            setSearchSuggestions(res);
-        } catch (err) {
-            console.log('err', err)
-        }
-        
     }
 
     const handleSongSelect = async (song: Song) => {
@@ -56,7 +51,7 @@ export default function SearchPage() {
                     type="text"
                     placeholder="Search for the song"
                     value={searchTerm}
-                    onChange={(e) => getSearchSuggestions(e)}
+                    onChange={handleInputChange}
                     style={{
                         flex: 1,
                         padding: '8px 12px',
@@ -78,15 +73,17 @@ export default function SearchPage() {
                     Search
                 </button>
             </div>
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             
             <div style={{ marginBottom: '20px' }}>
-                {searchSuggestions?.map((suggestion, index) => (
+                {suggestions?.map((suggestion, index) => (
                     <div
-                        key={index}
                         onClick={() => {
                             setSearchTerm(suggestion);
-                            setSearchSuggestions(null);
+                            setSuggestions([]);
+                            getSearchResult();
                         }}
+                        key={index}
                         style={{
                             padding: '8px 12px',
                             borderBottom: '1px solid #eee',
