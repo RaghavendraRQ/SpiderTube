@@ -80,19 +80,7 @@ export default function SearchItem({ song, onSelect }: SearchItemProps) {
                         {getTypeIcon()}
                     </div>
                 )}
-                <div style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    backgroundColor: getTypeColor(),
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    textTransform: 'capitalize'
-                }}>
-                    {song.type}
-                </div>
+                {/* thumbnail label removed as per design: only show image/icon */}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
                 <h3 style={{ 
@@ -112,7 +100,7 @@ export default function SearchItem({ song, onSelect }: SearchItemProps) {
                         fontSize: '14px',
                         color: '#7f8c8d'
                     }}>
-                        {song.type === SongType.Playlist ? 'Playlist' : 
+                        {song.type === SongType.Playlist ? 'playlist' : 
                          song.type === SongType.Album ? 'Album' : 
                          song.type === SongType.Artist ? 'Artist' : 'User'}
                     </p>
