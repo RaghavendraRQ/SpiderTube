@@ -54,8 +54,9 @@ export function useMediaSource(videoUrl: string) {
 
     try {
       const chunk = chunkQueueRef.current.shift()!;
+      const uint8Array = new Uint8Array(chunk);
       isAppendingRef.current = true;
-      sourceBuffer.appendBuffer(chunk);
+      sourceBuffer.appendBuffer(uint8Array);
     } catch (err) {
       console.error("Error appending buffer:", err);
       isAppendingRef.current = false;

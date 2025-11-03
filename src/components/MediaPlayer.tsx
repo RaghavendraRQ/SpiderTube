@@ -1,5 +1,6 @@
 // src/components/MediaPlayer.tsx
 import { useMediaSource } from "@/hooks/mediaSource";
+import { Progress } from "./ui/progress";
 
 export default function MediaPlayer({ video_id }: { video_id: string }) {
   const {
@@ -25,29 +26,26 @@ export default function MediaPlayer({ video_id }: { video_id: string }) {
 
       {metadata && (
         <div className="mt-4">
-          <p>📁 {metadata.filename}</p>
-          <p>🎵 {metadata.mimeType}</p>
-          <p>💾 {(metadata.totalSize / 1024 / 1024).toFixed(2)} MB</p>
+          <p>{metadata.filename}</p>
+          <p>{metadata.mimeType}</p>
+          <p>{(metadata.totalSize / 1024 / 1024).toFixed(2)} MB</p>
         </div>
       )}
 
-      <div className="w-full bg-gray-700 rounded-full h-2.5 mt-4">
-        <div
-          className={`h-2.5 rounded-full ${
-            isBuffering ? "bg-yellow-500" : "bg-green-500"
-          }`}
-          style={{ width: `${progress}%` }}
-        ></div>
-      </div>
+      <Progress value={progress} className="mt-4 w-full" />
 
       <button
         onClick={handlePlayPause}
         className="mt-4 px-4 py-2 bg-gray-800 rounded-md"
       >
-        {isPlaying ? "⏸ Pause" : "▶️ Play"}
+        {isPlaying ? "⏸ Pause" : "▶ Play"}
       </button>
 
       <audio ref={audioRef} />
     </div>
   );
+      <audio ref={audioRef} />
+    </div>
+  );
 }
+
