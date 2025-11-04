@@ -1,26 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { invoke } from "@tauri-apps/api/core";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { type Playlist } from "./models/song";
-
-
+import { getCachePlaylists } from "./models/cache";
 
 export default function GenrePage() {
     const { id } = useParams<{ id: string }>();
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
     useEffect(() => {
-        async function fetchPlaylists() {
-            if (!id) return;
-            try {
-                const res = await invoke<Playlist[]>("get_genre_playlist", { genre: id });
-                setPlaylists(res || []);
-            } catch (e) {
-                console.error("Failed to fetch playlists", e);
-            }
-        }
-        fetchPlaylists();
+        getCachePlaylists(id || "").then(setPlaylists);
     }, [id]);
 
     // navigation now handled via Link to /tracks/:id
@@ -52,7 +41,7 @@ export default function GenrePage() {
                                         <div className="text-sm text-muted-foreground mt-1">{p.trackCount ?? 0} tracks</div>
                                     </div>
                                     <div>
-                                        <Link to={`/tracks/${p.id}`} className="w-full block text-center bg-blue-600 text-white py-2 hover:bg-blue-700 transition">
+                                        <Link to={`/tracks/${p.id}`} className="w-full block text-center text-white py-2 transition">
                                             Select
                                         </Link>
                                     </div>
