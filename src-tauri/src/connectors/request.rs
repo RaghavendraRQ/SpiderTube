@@ -2,11 +2,11 @@ use std::path::PathBuf;
 
 use rustypipe::{
     client::RustyPipe,
-    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, Thumbnail},
+    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, MusicPlaylist, Thumbnail},
 };
 use tauri::State;
 
-use crate::{AppState, error::{self, SpideyTubeError, TauriError}};
+use crate::{AppState, error::{self, SpideyTubeError, TauriError}, model::SpideyTubePlaylist};
 
 use crate::model::Song;
 
@@ -118,4 +118,19 @@ pub async fn get_genre_playlist (
        .filter(|section| section.from_ytm)
        .collect()
     )
+}
+
+
+#[tauri::command]
+pub async fn get_playlist(
+    state: State<'_, AppState>,
+    id: &str
+) -> Result<SpideyTubePlaylist, TauriError> {
+    let playlist = state.rp
+        .query()
+        .music_playlist(id)
+        .await
+        .map_err(SpideyTubeError::from)?;
+
+    Ok(playlist.into())
 }

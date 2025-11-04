@@ -17,8 +17,14 @@ type Playlist = {
     id: string;
     name: string;
     thumbnail: Thumbnail[] | null;
-    track_count: number;
+    trackCount: number;
 };
+
+type MusicPlaylist = {
+    id: string;
+    tracks: Song[];
+    trackCount: number;
+}
 
 enum SongType {
     Track = "Track",
@@ -43,4 +49,4 @@ function createSong(id: string | null, name: string, thumbnail: Thumbnail[] | nu
     };
 }
 
-export { type Playlist, type Song, createSong, SongType, type Thumbnail, type Genres };
+export { type Playlist, type Song, createSong, SongType, type Thumbnail, type Genres, type MusicPlaylist };

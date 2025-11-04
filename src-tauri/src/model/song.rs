@@ -1,4 +1,4 @@
-use rustypipe::model::{traits::YtEntity, MusicItem, Thumbnail};
+use rustypipe::model::{MusicItem, Thumbnail, TrackItem, traits::YtEntity};
 
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -71,5 +71,16 @@ impl Song {
 
         Self { id, name, thumbnail, r#type}
         
+    }
+}
+
+impl From<TrackItem> for Song {
+    fn from(value: TrackItem) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+            thumbnail: Some(value.cover),
+            r#type: SongType::Track
+        }
     }
 }

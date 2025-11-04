@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
-import { type Playlist } from "./models/song";
+import { MusicPlaylist, type Playlist } from "./models/song";
 
 
 
@@ -15,7 +15,6 @@ export default function GenrePage() {
             if (!id) return;
             try {
                 const res = await invoke<Playlist[]>("get_genre_playlist", { genre: id });
-                console.table(res[0].thumbnail);
                 setPlaylists(res || []);
             } catch (e) {
                 console.error("Failed to fetch playlists", e);
@@ -23,6 +22,16 @@ export default function GenrePage() {
         }
         fetchPlaylists();
     }, [id]);
+
+    const handleSelect = async (id: string) => {
+        // Handle playlist selection logic here
+        try {
+            const playlist = await invoke<MusicPlaylist>("get_playlist", { id });
+            console.log(playlist.tracks);
+        } catch (e) {
+            console.error("Failed to fetch playlist", e);
+        }
+    }
 
     return (
         <div className="mx-auto max-w-7xl p-6">
@@ -48,7 +57,15 @@ export default function GenrePage() {
                                     )}
                                     <div className="p-4">
                                         <h4 className="font-semibold truncate">{p.name}</h4>
-                                        <div className="text-sm text-muted-foreground mt-1">{p.track_count ?? 0} tracks</div>
+                                        <div className="text-sm text-muted-foreground mt-1">{p.trackCount ?? 0} tracks</div>
+                                    </div>
+                                    <div>
+                                        <button
+                                            onClick={() => handleSelect(p.id)}
+                                            className="w-full bg-blue-600 text-white py-2 hover:bg-blue-700 transition"
+                                        >
+                                            Select
+                                        </button>
                                     </div>
                                 </div>
                             );

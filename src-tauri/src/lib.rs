@@ -33,6 +33,7 @@ pub fn run() {
             connectors::request::search_result,
             connectors::request::get_genre_playlist,
             connectors::request::get_genres,
+            connectors::request::get_playlist,
             // User-level Utilites
             request::utils::clear_cache
         ])
