@@ -14,11 +14,15 @@ type AudioStreamEvent =
     }
     | {event: "Finished";} 
 
-export default function ChannelPlayer() {
+interface ChannelPlayerProps { 
+    videoId: string;
+}
+
+export default function ChannelPlayer({ videoId }: ChannelPlayerProps) {
     const [filePath, setFilePath] =  useState<string>("");
     const audioCtx = new window.AudioContext() ;
     let lastEnd = audioCtx?.currentTime;
-    const url = "https://music.youtube.com/watch?v=dQw4w9WgXcQ";
+    const url = "https://music.youtube.com/watch?v=" + videoId;
 
     async function BufferAudio(chunk: number[]) {
         console.log("Streaming media")
