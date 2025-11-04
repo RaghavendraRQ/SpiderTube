@@ -12,6 +12,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <Route path="/" element={<App />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/genre/:id" element={React.createElement(React.lazy(() => import("./genre")))} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

@@ -1,24 +1,15 @@
-import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { type Genres } from "./models/song";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./components/ui/card";
 import { Button } from "./components/ui/button";
 import { Link } from "react-router-dom";
+import { getCacheGenres } from "./models/cache";
 
 export default function HomePage() {
     const [genres, setGenres] = useState<Genres[]>([]);
 
     useEffect(() => {
-        async function fetchGenres() {
-            try {
-                const result = await invoke<Genres[]>("get_genres");
-                setGenres(result);
-            } catch (error) {
-                console.error("Error fetching genres:", error);
-            }
-        }
-
-        fetchGenres();
+        getCacheGenres().then(setGenres)
     }, []);
 
     return (
@@ -38,9 +29,9 @@ export default function HomePage() {
                 <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {genres.map((g) => (
-                            <div key={g.id} className="rounded-lg bg-white p-4 shadow-sm border">
+                            <Link key={g.id} to={`/genre/${g.id}`} className="rounded-lg bg-white p-4 shadow-sm border hover:shadow-md transition">
                                 <h4 className="font-semibold">{g.name}</h4>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </CardContent>
