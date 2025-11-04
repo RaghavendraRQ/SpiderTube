@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
-import { MusicPlaylist, type Playlist } from "./models/song";
+import { type Playlist } from "./models/song";
 
 
 
@@ -23,15 +23,7 @@ export default function GenrePage() {
         fetchPlaylists();
     }, [id]);
 
-    const handleSelect = async (id: string) => {
-        // Handle playlist selection logic here
-        try {
-            const playlist = await invoke<MusicPlaylist>("get_playlist", { id });
-            console.log(playlist.tracks);
-        } catch (e) {
-            console.error("Failed to fetch playlist", e);
-        }
-    }
+    // navigation now handled via Link to /tracks/:id
 
     return (
         <div className="mx-auto max-w-7xl p-6">
@@ -60,12 +52,9 @@ export default function GenrePage() {
                                         <div className="text-sm text-muted-foreground mt-1">{p.trackCount ?? 0} tracks</div>
                                     </div>
                                     <div>
-                                        <button
-                                            onClick={() => handleSelect(p.id)}
-                                            className="w-full bg-blue-600 text-white py-2 hover:bg-blue-700 transition"
-                                        >
+                                        <Link to={`/tracks/${p.id}`} className="w-full block text-center bg-blue-600 text-white py-2 hover:bg-blue-700 transition">
                                             Select
-                                        </button>
+                                        </Link>
                                     </div>
                                 </div>
                             );

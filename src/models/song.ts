@@ -22,6 +22,7 @@ type Playlist = {
 
 type MusicPlaylist = {
     id: string;
+    name: string;
     tracks: Song[];
     trackCount: number;
 }
