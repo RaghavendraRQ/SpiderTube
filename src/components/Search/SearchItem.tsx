@@ -80,7 +80,6 @@ export default function SearchItem({ song, onSelect }: SearchItemProps) {
                         {getTypeIcon()}
                     </div>
                 )}
-                {/* thumbnail label removed as per design: only show image/icon */}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
                 <h3 style={{ 

@@ -44,8 +44,4 @@ export default function MediaPlayer({ video_id }: { video_id: string }) {
       <audio ref={audioRef} />
     </div>
   );
-      <audio ref={audioRef} />
-    </div>
-  );
 }
-

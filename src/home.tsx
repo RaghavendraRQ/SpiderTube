@@ -1,0 +1,41 @@
+import { useEffect, useState } from "react";
+import { type Genres } from "./models/song";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./components/ui/card";
+import { Button } from "./components/ui/button";
+import { Link } from "react-router-dom";
+import { getCacheGenres } from "./models/cache";
+
+export default function HomePage() {
+    const [genres, setGenres] = useState<Genres[]>([]);
+
+    useEffect(() => {
+        getCacheGenres().then(setGenres)
+    }, []);
+
+    return (
+        <div className="mx-auto max-w-5xl p-6">
+            <Card>
+                <CardHeader>
+                    <div>
+                        <CardTitle>Discover music</CardTitle>
+                        <CardDescription>Explore genres curated from multiple sources.</CardDescription>
+                    </div>
+                    <div>
+                        <Button asChild>
+                            <Link to="/search">Search music</Link>
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {genres.map((g) => (
+                            <Link key={g.id} to={`/genre/${g.id}`} className="rounded-lg bg-white p-4 shadow-sm border hover:shadow-md transition">
+                                <h4 className="font-semibold">{g.name}</h4>
+                            </Link>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
