@@ -1,4 +1,4 @@
-use rustypipe::model::{MusicItem, Thumbnail, TrackItem, traits::YtEntity};
+use rustypipe::model::{traits::YtEntity, MusicItem, Thumbnail, TrackItem};
 
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -42,16 +42,16 @@ pub struct Song {
     pub id: String,
     pub name: String,
     pub thumbnail: Option<Vec<Thumbnail>>,
-    pub r#type: SongType
+    pub r#type: SongType,
 }
 
 #[derive(Clone, serde::Serialize)]
-pub enum  SongType{
+pub enum SongType {
     Playlist,
     Track,
     Album,
     Artist,
-    User
+    User,
 }
 
 impl Song {
@@ -60,17 +60,36 @@ impl Song {
         let name = music_item.name().to_string();
         let thumbnail;
         let r#type;
-         
+
         match music_item {
-            MusicItem::Playlist(t) => {thumbnail = Some(t.thumbnail.clone()); r#type = SongType::Playlist;}
-            MusicItem::Album(t) => {thumbnail = Some(t.cover.clone()); r#type = SongType::Album;}
-            MusicItem::Track(t) => {thumbnail = Some(t.cover.clone()); r#type = SongType::Track;}
-            MusicItem::User(u) => {thumbnail = Some(u.avatar.clone()); r#type = SongType::User;}
-            MusicItem::Artist(t) => {thumbnail = Some(t.avatar.clone()); r#type = SongType::Artist;}
+            MusicItem::Playlist(t) => {
+                thumbnail = Some(t.thumbnail.clone());
+                r#type = SongType::Playlist;
+            }
+            MusicItem::Album(t) => {
+                thumbnail = Some(t.cover.clone());
+                r#type = SongType::Album;
+            }
+            MusicItem::Track(t) => {
+                thumbnail = Some(t.cover.clone());
+                r#type = SongType::Track;
+            }
+            MusicItem::User(u) => {
+                thumbnail = Some(u.avatar.clone());
+                r#type = SongType::User;
+            }
+            MusicItem::Artist(t) => {
+                thumbnail = Some(t.avatar.clone());
+                r#type = SongType::Artist;
+            }
         };
 
-        Self { id, name, thumbnail, r#type}
-        
+        Self {
+            id,
+            name,
+            thumbnail,
+            r#type,
+        }
     }
 }
 
@@ -80,7 +99,7 @@ impl From<TrackItem> for Song {
             id: value.id,
             name: value.name,
             thumbnail: Some(value.cover),
-            r#type: SongType::Track
+            r#type: SongType::Track,
         }
     }
 }

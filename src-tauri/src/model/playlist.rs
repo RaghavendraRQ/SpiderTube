@@ -16,8 +16,7 @@ impl From<MusicPlaylist> for SpideyTubePlaylist {
             id: value.id,
             name: value.name,
             track_count: value.track_count,
-            tracks: value.tracks.items.into_iter().map(Into::into).collect()
+            tracks: value.tracks.items.into_iter().map(Into::into).collect(),
         }
-        
     }
 }

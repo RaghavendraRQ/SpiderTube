@@ -1,6 +1,6 @@
-pub mod song;
 pub mod playlist;
+pub mod song;
 
 // Default exports--
-pub use song::Song;
 pub use playlist::SpideyTubePlaylist;
+pub use song::Song;

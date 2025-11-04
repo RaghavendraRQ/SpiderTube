@@ -2,24 +2,30 @@ use std::path::PathBuf;
 
 use rustypipe::{
     client::RustyPipe,
-    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, MusicPlaylist, Thumbnail},
+    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, Thumbnail},
 };
 use tauri::State;
 
-use crate::{AppState, error::{self, SpideyTubeError, TauriError}, model::SpideyTubePlaylist};
+use crate::{
+    error::{self, SpideyTubeError, TauriError},
+    model::SpideyTubePlaylist,
+    AppState,
+};
 
 use crate::model::Song;
 
 pub fn get_rustypipe(path: PathBuf) -> error::Result<RustyPipe> {
-    let rp = RustyPipe::builder()
-        .storage_dir(path)
-        .build()?;
+    let rp = RustyPipe::builder().storage_dir(path).build()?;
     Ok(rp)
 }
 
 #[tauri::command]
-pub async fn get_song_info(state: State<'_, AppState>, video_id: String) -> Result<String, TauriError> {
-    let metadata = state.rp
+pub async fn get_song_info(
+    state: State<'_, AppState>,
+    video_id: String,
+) -> Result<String, TauriError> {
+    let metadata = state
+        .rp
         .query()
         .music_details(video_id)
         .await
@@ -37,7 +43,8 @@ pub async fn get_track_thumbnail(
     state: State<'_, AppState>,
     video_id: String,
 ) -> Result<Option<Vec<Thumbnail>>, TauriError> {
-    let track = state.rp
+    let track = state
+        .rp
         .query()
         .music_details(video_id)
         .await
@@ -52,8 +59,13 @@ pub async fn get_track_thumbnail(
 }
 
 #[tauri::command]
-pub async fn search_result(state: State<'_, AppState>, track_name: String, mut limit: u8) -> Result<Vec<Song>, TauriError> {
-    let tracks: MusicSearchResult<MusicItem> = state.rp
+pub async fn search_result(
+    state: State<'_, AppState>,
+    track_name: String,
+    mut limit: u8,
+) -> Result<Vec<Song>, TauriError> {
+    let tracks: MusicSearchResult<MusicItem> = state
+        .rp
         .query()
         .music_search(&track_name, None)
         .await
@@ -76,7 +88,8 @@ pub async fn get_search_suggestions(
     state: State<'_, AppState>,
     search_buffer: &str,
 ) -> Result<Vec<String>, TauriError> {
-    let suggestions = state.rp
+    let suggestions = state
+        .rp
         .query()
         .music_search_suggestion(search_buffer)
         .await
@@ -86,12 +99,10 @@ pub async fn get_search_suggestions(
     Ok(suggestions)
 }
 
-
 #[tauri::command]
-pub async fn get_genres(
-    state: State<'_, AppState>,
-) -> Result<Vec<MusicGenreItem>, TauriError> {
-    let genres = state.rp
+pub async fn get_genres(state: State<'_, AppState>) -> Result<Vec<MusicGenreItem>, TauriError> {
+    let genres = state
+        .rp
         .query()
         .music_genres()
         .await
@@ -101,32 +112,32 @@ pub async fn get_genres(
 }
 
 #[tauri::command]
-pub async fn get_genre_playlist (
+pub async fn get_genre_playlist(
     state: State<'_, AppState>,
-    genre: &str
+    genre: &str,
 ) -> Result<Vec<MusicPlaylistItem>, TauriError> {
-    let res = state.rp
+    let res = state
+        .rp
         .query()
         .music_genre(genre)
         .await
         .map_err(SpideyTubeError::from)?
         .sections;
 
-    Ok(
-       res.into_iter()
-       .flat_map(|section| section.playlists)
-       .filter(|section| section.from_ytm)
-       .collect()
-    )
+    Ok(res
+        .into_iter()
+        .flat_map(|section| section.playlists)
+        .filter(|section| section.from_ytm)
+        .collect())
 }
-
 
 #[tauri::command]
 pub async fn get_playlist(
     state: State<'_, AppState>,
-    id: &str
+    id: &str,
 ) -> Result<SpideyTubePlaylist, TauriError> {
-    let playlist = state.rp
+    let playlist = state
+        .rp
         .query()
         .music_playlist(id)
         .await

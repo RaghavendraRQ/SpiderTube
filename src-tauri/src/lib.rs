@@ -7,10 +7,9 @@ mod error;
 mod model;
 mod request;
 
-
 #[derive(Default)]
 struct AppState {
-    rp: RustyPipe
+    rp: RustyPipe,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -19,7 +18,7 @@ pub fn run() {
         .setup(|app| {
             let cache_dir = app.path().app_cache_dir().unwrap();
             app.manage(AppState {
-                rp: connectors::request::get_rustypipe(cache_dir)?
+                rp: connectors::request::get_rustypipe(cache_dir)?,
             });
             Ok(())
         })
@@ -27,7 +26,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             request::stream::start,
             request::stream::start_stream,
-            // Rustypipe 
+            // Rustypipe
             connectors::request::get_search_suggestions,
             connectors::request::get_song_info,
             connectors::request::search_result,
