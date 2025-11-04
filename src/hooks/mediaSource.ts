@@ -15,7 +15,7 @@ type AudioStreamEvent =
     }
   | { event: "Finished" };
 
-export function useMediaSource(videoUrl: string) {
+export function useMediaSource(videoId: string) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -30,7 +30,7 @@ export function useMediaSource(videoUrl: string) {
   const lastChunkReceivedRef = useRef(false);
 
   const defaultId = "F3hHTG7l1mM";
-  const url = `https://music.youtube.com/watch?v=${videoUrl || defaultId}`;
+  const url = `https://music.youtube.com/watch?v=${videoId || defaultId}`;
 
   // Process queued chunks sequentially
   const processChunkQueue = useCallback(() => {
@@ -44,7 +44,7 @@ export function useMediaSource(videoUrl: string) {
         !isAppendingRef.current &&
         mediaSource?.readyState === "open"
       ) {
-        console.log("✅ All chunks processed, ending stream");
+        console.log("All chunks processed, ending stream");
         mediaSource.endOfStream();
       }
       return;
@@ -82,7 +82,7 @@ export function useMediaSource(videoUrl: string) {
         });
 
         sourceBuffer.addEventListener("error", (e) => {
-          console.error("❌ SourceBuffer error:", e);
+          console.error("SourceBuffer error:", e);
         });
       } catch (err) {
         console.error("Failed to create SourceBuffer:", err);
@@ -103,7 +103,7 @@ export function useMediaSource(videoUrl: string) {
     }
 
     mediaSource.addEventListener("sourceopen", () => {
-      console.log("🔓 MediaSource opened");
+      console.log("MediaSource opened");
     });
   }, []);
 
@@ -154,7 +154,7 @@ export function useMediaSource(videoUrl: string) {
           }
 
           case "Finished":
-            console.log("🏁 Stream finished");
+            console.log("Stream finished");
             lastChunkReceivedRef.current = true;
             processChunkQueue();
             break;
@@ -165,7 +165,7 @@ export function useMediaSource(videoUrl: string) {
         videoUrl: url,
         channel: audioChannel,
       });
-      console.log("📋 Metadata:", meta);
+      console.log("Metadata:", meta);
 
       setMetadata(meta);
       createSourceBuffer(meta.mimeType);
@@ -183,9 +183,9 @@ export function useMediaSource(videoUrl: string) {
 
     const handleCanPlay = () => {
       setIsBuffering(false);
-      audio.play().catch((e) =>
-        console.warn("Auto-play blocked by browser:", e.message)
-      );
+      // audio.play().catch((e) =>
+      //   console.warn("Auto-play blocked by browser:", e.message)
+      // );
     };
 
     const handleWaiting = () => setIsBuffering(true);
@@ -208,11 +208,22 @@ export function useMediaSource(videoUrl: string) {
     };
   }, []);
 
-  const handlePlayPause = useCallback(() => {
-    if (!audioRef.current) return;
-    if (isPlaying) audioRef.current.pause();
-    else audioRef.current.play().catch(console.error);
-  }, [isPlaying]);
+  const handlePlayPause = useCallback(async() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+      return;
+    }
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch (error) {
+      console.error("Error playing audio:", error);
+    }
+ }, [isPlaying]);
 
   return {
     audioRef,

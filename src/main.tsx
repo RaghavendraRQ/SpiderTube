@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import SearchPage from "./components/UI/SearchPage";
+import SearchPage from "./components/Search/SearchPage";
 import ProfilePage from "./profile";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
