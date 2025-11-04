@@ -2,13 +2,13 @@ use std::path::PathBuf;
 
 use rustypipe::{
     client::RustyPipe,
-    model::{MusicItem, MusicSearchResult, Thumbnail},
+    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, Thumbnail},
 };
 use tauri::State;
 
 use crate::{AppState, error::{self, SpideyTubeError, TauriError}};
 
-use super::Song;
+use crate::model::Song;
 
 pub fn get_rustypipe(path: PathBuf) -> error::Result<RustyPipe> {
     let rp = RustyPipe::builder()
@@ -78,9 +78,44 @@ pub async fn get_search_suggestions(
 ) -> Result<Vec<String>, TauriError> {
     let suggestions = state.rp
         .query()
-        .search_suggestion(search_buffer)
+        .music_search_suggestion(search_buffer)
         .await
-        .map_err(SpideyTubeError::from)?;
+        .map_err(SpideyTubeError::from)?
+        .terms;
     // dbg!(&suggestions);
     Ok(suggestions)
+}
+
+
+#[tauri::command]
+pub async fn get_genres(
+    state: State<'_, AppState>,
+) -> Result<Vec<MusicGenreItem>, TauriError> {
+    let genres = state.rp
+        .query()
+        .music_genres()
+        .await
+        .map_err(SpideyTubeError::from)?;
+
+    Ok(genres)
+}
+
+#[tauri::command]
+pub async fn get_genre_playlist (
+    state: State<'_, AppState>,
+    genre: &str
+) -> Result<Vec<MusicPlaylistItem>, TauriError> {
+    let res = state.rp
+        .query()
+        .music_genre(genre)
+        .await
+        .map_err(SpideyTubeError::from)?
+        .sections;
+
+    Ok(
+       res.into_iter()
+       .flat_map(|section| section.playlists)
+       .filter(|section| section.from_ytm)
+       .collect()
+    )
 }

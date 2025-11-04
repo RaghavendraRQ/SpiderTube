@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import "./App.css";
-import LocalPlayer from "./components/LocalPlayer";
+import HomePage from "./home";
 import { Menu } from "@tauri-apps/api/menu";
 import { navigateTo, setNavigateFunction } from "./navigate";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +41,7 @@ function App() {
   return (
     <div>
       <h1>Welcome to SpiderTube</h1>
+      <HomePage />
     </div>
   )
 }
