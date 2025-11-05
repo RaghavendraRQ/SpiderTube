@@ -15,7 +15,7 @@ export default function Player({ videoId }: { videoId: string }) {
     return (
          <div className="p-4 rounded-lg bg-gray-800 text-white">
       <audio ref={audioRef} controls={false} />
-      <div>{metadata?.filename || "Loading..."}</div>
+      <div>{metadata?.name || "Loading..."}</div>
       <div>{isBuffering ? "Buffering..." : isPlaying ? "Playing" : "Paused"}</div>
       <div className="h-1 w-full bg-gray-600 mt-2">
         <div

@@ -5,7 +5,7 @@ use rustypipe::model::{MusicItem, Thumbnail, TrackDetails, TrackItem, TrackType,
 pub struct Metadata {
     pub id: String,
     pub name: String,
-    pub r#type: TrackType,
+    pub r#type: String,
     pub related_id: Option<String>,
     pub size: Option<u64>
 }
@@ -15,7 +15,7 @@ impl Metadata {
         Self {
             id,
             name,
-            r#type: TrackType::Track,
+            r#type: String::from("audio/mpeg"),
             related_id: None,
             size: None
         }
@@ -25,10 +25,15 @@ impl Metadata {
 
 impl From<TrackDetails> for Metadata  {
     fn from(value: TrackDetails) -> Self {
+        let r#type = match value.track.track_type {
+            TrackType::Video => "audio/mpeg",
+            TrackType::Track => "audio/mpeg",
+            TrackType::Episode => "audio/aac"
+        };
         Self {
             id: value.track.id,
             name: value.track.name,
-            r#type: value.track.track_type,
+            r#type: r#type.to_string(),
             size: None,
             related_id: value.related_id
         }
