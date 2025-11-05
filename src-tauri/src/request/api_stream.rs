@@ -31,7 +31,7 @@ pub async fn stream_from_api(
         return Err(format!("Invalid format: {}", content_type));
     }
     eprintln!("content_length: {}", content_length);
-    let metadata = song::Metadata::new(content_length, content_type, extract_file_name(url));
+    let metadata = song::Metadata::from(extract_file_name(url), "name".to_string());
 
     // thread::spawn(move || {
     //     if let Err(e) = stream_audio_from_api(&url, &on_event) {

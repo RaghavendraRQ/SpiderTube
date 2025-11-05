@@ -8,11 +8,10 @@ use tokio::{fs::File, io::AsyncWriteExt, sync::broadcast, task};
 use bytes::Bytes;
 
 use crate::{
-    connectors,
-    model::song::{AudioStreamEvent, Metadata},
+    AppState, connectors::{self, request::get_song_info}, error::{TauriError}, model::song::{AudioStreamEvent, Metadata}
 };
 
-use tauri::{ipc::Channel, AppHandle, Manager};
+use tauri::{AppHandle, Manager, State, ipc::Channel};
 
 const CHUNK_SIZE: usize = 256 * 1024; // 256 Bytes
 
@@ -30,19 +29,21 @@ pub async fn start(app: AppHandle, video_url: String) -> Option<PathBuf> {
 #[tauri::command]
 pub async fn start_stream(
     app: AppHandle,
+    state: State<'_, AppState>,
     video_url: String,
     channel: Channel<AudioStreamEvent>,
-) -> Result<Metadata, String> {
-    let metadata = Metadata::new(100, "audio/mpeg".to_string(), video_url.clone());
+) -> Result<Metadata, TauriError> {
+    let video_id = get_video_id(&video_url).unwrap_or(String::from("Raghav"));
+    let metadata = get_song_info(state, video_id).await?;
 
     // Create subprocess
     let mut yt_dlp = connectors::stream::yt_dlp(&video_url)?;
     let mut ffmpeg = connectors::stream::ffmpeg()?;
 
     // Take the handles for both
-    let yt_dlp_stdout = yt_dlp.stdout.take().ok_or("Failed to capture")?;
-    let ffmpeg_stdin = ffmpeg.stdin.take().ok_or("Failed to read")?;
-    let ff_stdout = ffmpeg.stdout.take().ok_or("Faied to open stdout")?;
+    let yt_dlp_stdout = yt_dlp.stdout.take().ok_or("Failed to capture".to_string())?;
+    let ffmpeg_stdin = ffmpeg.stdin.take().ok_or("Failed to read".to_string())?;
+    let ff_stdout = ffmpeg.stdout.take().ok_or("Faied to open stdout".to_string())?;
 
     // Cache Path
     let cache_path = get_create_file_path(&app, &video_url).map_err(|e| e.to_string())?;

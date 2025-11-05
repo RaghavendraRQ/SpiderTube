@@ -21,8 +21,8 @@ pub type Result<T> = std::result::Result<T, SpideyTubeError>;
 
 #[derive(serde::Serialize)]
 pub(crate) struct TauriError {
-    code: u16,
-    msg: String,
+    pub code: u16,
+    pub msg: String,
 }
 
 impl From<SpideyTubeError> for TauriError {
@@ -36,5 +36,14 @@ impl From<SpideyTubeError> for TauriError {
         };
 
         Self { code, msg }
+    }
+}
+
+impl From<String> for TauriError {
+    fn from(value: String) -> Self {
+        Self {
+            code: 515,
+            msg: value,
+        }
     }
 }

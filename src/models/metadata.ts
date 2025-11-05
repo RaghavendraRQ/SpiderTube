@@ -1,8 +1,16 @@
 export type Metadata = {
-    size: number,
-    mimeType:FileMimeType,
-    filename: string,
-    totalSize: number,
+    id: string;
+    name: string;
+    trackType: TrackType;
+    relatedId: string;
+    size: number;
+    duration: number;
+}
+
+export enum TrackType {
+    Track = "audio/mpeg",
+    Video = "audio/m4a",
+    Episode = "audio/wav",
 }
 
 

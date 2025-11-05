@@ -7,9 +7,7 @@ use rustypipe::{
 use tauri::State;
 
 use crate::{
-    error::{self, SpideyTubeError, TauriError},
-    model::SpideyTubePlaylist,
-    AppState,
+    AppState, error::{self, SpideyTubeError, TauriError}, model::{SpideyTubePlaylist, song::Metadata}
 };
 
 use crate::model::Song;
@@ -23,7 +21,7 @@ pub fn get_rustypipe(path: PathBuf) -> error::Result<RustyPipe> {
 pub async fn get_song_info(
     state: State<'_, AppState>,
     video_id: String,
-) -> Result<String, TauriError> {
+) -> Result<Metadata, TauriError> {
     let metadata = state
         .rp
         .query()
@@ -32,7 +30,7 @@ pub async fn get_song_info(
         .map_err(SpideyTubeError::from)?;
 
     dbg!(&metadata);
-    Ok(metadata.track.id)
+    Ok(metadata.into())
 }
 
 /// There is a bug in this function
