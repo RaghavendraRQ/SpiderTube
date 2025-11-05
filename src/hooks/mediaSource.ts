@@ -168,7 +168,7 @@ export function useMediaSource(videoId: string) {
       console.log("Metadata:", meta);
 
       setMetadata(meta);
-      createSourceBuffer(meta.trackType);
+      createSourceBuffer(meta.type);
       setIsBuffering(false);
     } catch (err) {
       console.error("Stream setup failed:", err);
