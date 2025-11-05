@@ -140,9 +140,9 @@ export function useMediaSource(videoId: string) {
             chunkQueueRef.current.push(uint8Array);
 
             totalReceivedRef.current += message.data.chunkData.length;
-            if (metadata && metadata.totalSize > 0) {
+            if (metadata && metadata.size > 0) {
               const progressPercent =
-                (totalReceivedRef.current / metadata.totalSize) * 100;
+                (totalReceivedRef.current / metadata.size) * 100;
               setProgress(Math.round(progressPercent));
             }
 
@@ -168,7 +168,7 @@ export function useMediaSource(videoId: string) {
       console.log("Metadata:", meta);
 
       setMetadata(meta);
-      createSourceBuffer(meta.mimeType);
+      createSourceBuffer(meta.trackType);
       setIsBuffering(false);
     } catch (err) {
       console.error("Stream setup failed:", err);
