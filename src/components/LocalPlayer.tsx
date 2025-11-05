@@ -1,4 +1,5 @@
-import {BaseDirectory, readFile} from "@tauri-apps/plugin-fs";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { appCacheDir } from "@tauri-apps/api/path";
 
 interface LocalPlayerProps {
     video_id: string
@@ -7,15 +8,17 @@ interface LocalPlayerProps {
 export default function LocalPlayer({video_id}: LocalPlayerProps) {
     
     const player = async function () {
-        const file = video_id + ".mp3"
-        const fileData = await readFile(file, { baseDir: BaseDirectory.AppCache });
+        const appCacheDirPath = await appCacheDir();
+        const filePath = `${appCacheDirPath}${video_id}.mp3`;
+        const fileSrc = convertFileSrc(filePath);
+        console.log("Playing local file from:", fileSrc);
 
-        const blob = new Blob([fileData], { type: "audio/mpeg" });
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        audio.play();
-
-        audio.onended = () => URL.revokeObjectURL(url);
+        try {
+            const audio = new Audio(fileSrc);
+            await audio.play();
+        } catch (error) {
+            console.error("Error playing audio:", error);
+        }
     }
 
     return (
