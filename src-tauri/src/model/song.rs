@@ -1,4 +1,6 @@
-use rustypipe::model::{MusicItem, Thumbnail, TrackDetails, TrackItem, TrackType, traits::YtEntity};
+use rustypipe::model::{
+    traits::YtEntity, MusicItem, Thumbnail, TrackDetails, TrackItem, TrackType,
+};
 
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -7,7 +9,7 @@ pub struct Metadata {
     pub name: String,
     pub r#type: String,
     pub related_id: Option<String>,
-    pub size: Option<u64>
+    pub size: Option<u64>,
 }
 
 impl Metadata {
@@ -17,28 +19,26 @@ impl Metadata {
             name,
             r#type: String::from("audio/mpeg"),
             related_id: None,
-            size: None
+            size: None,
         }
-
     }
 }
 
-impl From<TrackDetails> for Metadata  {
+impl From<TrackDetails> for Metadata {
     fn from(value: TrackDetails) -> Self {
         let r#type = match value.track.track_type {
             TrackType::Video => "audio/mpeg",
             TrackType::Track => "audio/mpeg",
-            TrackType::Episode => "audio/aac"
+            TrackType::Episode => "audio/aac",
         };
         Self {
             id: value.track.id,
             name: value.track.name,
             r#type: r#type.to_string(),
             size: None,
-            related_id: value.related_id
+            related_id: value.related_id,
         }
     }
-    
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -59,7 +59,6 @@ pub enum AudioStreamEvent {
     },
     Finished,
 }
-
 
 #[derive(Clone, serde::Serialize)]
 pub struct Song {

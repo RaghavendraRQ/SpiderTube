@@ -7,7 +7,9 @@ use rustypipe::{
 use tauri::State;
 
 use crate::{
-    AppState, error::{self, SpideyTubeError, TauriError}, model::{SpideyTubePlaylist, song::Metadata}
+    error::{self, SpideyTubeError, TauriError},
+    model::{song::Metadata, SpideyTubePlaylist},
+    AppState,
 };
 
 use crate::model::Song;

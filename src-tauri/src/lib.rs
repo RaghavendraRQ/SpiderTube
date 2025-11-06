@@ -16,7 +16,10 @@ struct AppState {
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let cache_dir = app.path().app_cache_dir().unwrap();
+            let cache_dir = app
+                .path()
+                .app_cache_dir()
+                .expect("Error in getting cache_dir");
             app.manage(AppState {
                 rp: connectors::request::get_rustypipe(cache_dir)?,
             });

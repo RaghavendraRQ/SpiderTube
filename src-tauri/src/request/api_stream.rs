@@ -63,7 +63,7 @@ async fn stream_audio_from_api(
         .send(song::AudioStreamEvent::Started {
             song_id: "rangdom".to_string(),
         })
-        .unwrap();
+        .expect("Error in sending audio");
     while let Some(chunk) = stream.next().await {
         let bytes = chunk.map_err(|e| e.to_string())?;
 

@@ -8,10 +8,13 @@ use tokio::{fs::File, io::AsyncWriteExt, sync::broadcast, task};
 use bytes::Bytes;
 
 use crate::{
-    AppState, connectors::{self, request::get_song_info}, error::{TauriError}, model::song::{AudioStreamEvent, Metadata}
+    connectors::{self, request::get_song_info},
+    error::TauriError,
+    model::song::{AudioStreamEvent, Metadata},
+    AppState,
 };
 
-use tauri::{AppHandle, Manager, State, ipc::Channel};
+use tauri::{ipc::Channel, AppHandle, Manager, State};
 
 const CHUNK_SIZE: usize = 256 * 1024; // 256 Bytes
 
@@ -41,9 +44,15 @@ pub async fn start_stream(
     let mut ffmpeg = connectors::stream::ffmpeg()?;
 
     // Take the handles for both
-    let yt_dlp_stdout = yt_dlp.stdout.take().ok_or("Failed to capture".to_string())?;
+    let yt_dlp_stdout = yt_dlp
+        .stdout
+        .take()
+        .ok_or("Failed to capture".to_string())?;
     let ffmpeg_stdin = ffmpeg.stdin.take().ok_or("Failed to read".to_string())?;
-    let ff_stdout = ffmpeg.stdout.take().ok_or("Faied to open stdout".to_string())?;
+    let ff_stdout = ffmpeg
+        .stdout
+        .take()
+        .ok_or("Faied to open stdout".to_string())?;
 
     // Cache Path
     let cache_path = get_create_file_path(&app, &video_url).map_err(|e| e.to_string())?;
