@@ -14,8 +14,7 @@ export default function MediaPlayer({ video_id }: { video_id: string }) {
   } = useMediaSource(video_id);
 
   return (
-    <div className="p-6 bg-neutral-900 text-white rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-3">🎵 Progressive Streaming Player</h2>
+    <div className="p-6 bg-[#eaecf1] tral-900 text-white rounded-lg shadow-lg">
       <button
         onClick={startStream}
         disabled={isBuffering}
@@ -26,9 +25,9 @@ export default function MediaPlayer({ video_id }: { video_id: string }) {
 
       {metadata && (
         <div className="mt-4">
-          <p>{metadata.filename}</p>
-          <p>{metadata.mimeType}</p>
-          <p>{(metadata.totalSize / 1024 / 1024).toFixed(2)} MB</p>
+          <p>{metadata.name}</p>
+          <p>{metadata.type}</p>
+          <p>{(metadata.size / 1024 / 1024).toFixed(2)} MB</p>
         </div>
       )}
 
