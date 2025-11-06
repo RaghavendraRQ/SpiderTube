@@ -3,13 +3,14 @@ import { useParams } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { type MusicPlaylist, type Song } from "./models/song";
-import Player from "./components/overlay/player";
 import { Spinner } from "./components/ui/spinner";
+import { useSongStore } from "./store/song";
 
 export default function TracksPage() {
     const { id } = useParams<{ id: string }>();
     const [playlist, setPlaylist] = useState<MusicPlaylist | null>(null);
     const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+    const {setCurrentSongId} = useSongStore();
 
     useEffect(() => {
         async function fetchPlaylist() {
@@ -30,6 +31,11 @@ export default function TracksPage() {
 
         }
     }, [selectedTrackId]);
+
+    const handleClick = (t: string) => {
+        setSelectedTrackId(t);
+        setCurrentSongId(t);
+    }
 
     return (
         <div className="mx-auto max-w-4xl p-6">
@@ -62,12 +68,11 @@ export default function TracksPage() {
                                     </div>
                                     <div>
                                         <button className="bg-blue-600 text-white px-3 py-1 rounded"
-                                        onClick={() => setSelectedTrackId(t.id)}
+                                        onClick={() => handleClick(t.id)}
                                         >Play</button>
                                     </div>
                                 </div>
                             ))}
-                            <Player videoId={selectedTrackId || ""} />
                         </div>
                     ) : (
                         <div className="text-center text-muted-foreground">No Songs Found</div>

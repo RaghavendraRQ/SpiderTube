@@ -1,7 +1,9 @@
 import { useMediaSource } from "@/hooks/mediaSource";
 import { useEffect } from "react";
+import { useSongStore } from "../../store/song";
 
-export default function Player({ videoId }: { videoId: string }) {
+export default function Player() {
+    const videoId = useSongStore((state) => state.currentSongId) || "";
     const { isPlaying, isBuffering, progress, metadata, audioRef, startStream, handlePlayPause } = useMediaSource(videoId);
     
     useEffect(() => {
