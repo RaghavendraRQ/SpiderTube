@@ -5,14 +5,15 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import SearchPage from "./components/Search/SearchPage";
 import ProfilePage from "./profile";
 import SideBar from "./components/overlay/SideBar";
+import Player from "./components/overlay/player";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
       <div className="flex h-screen bg-[#e8e9f2] text-white">
         <SideBar />
-        <main className="flex-1 overflow-y-auto scrollbar-hide relative pb-16 [&::-webkit-scrollbar]:hidden">
-          <div className="min-h-full">
+        <main className="flex-1  overflow-y-auto scrollbar-hide relative pb-16 [&::-webkit-scrollbar]:hidden">
+          <div className="min-h-full rounded-lg">
             <Routes>
               <Route path="/" element={<App />} />
               <Route path="/search" element={<SearchPage />} />
@@ -22,8 +23,10 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             </Routes>
           </div>
         </main>
-        <div className="w-full fixed bottom-0 left-0 right-0 bg-neutral-800 text-white py-2">
-          <div className="mx-auto max-w-7xl px-4">Player placeholder (to be implemented)</div>
+        <div className="w-full fixed bottom-0 left-0 right-0 bg-[#d2dbe4] tral-800 text-white py-2">
+          <div className="mx-auto max-w-8xl px-4">
+            <Player />
+          </div>
         </div>
       </div>
     </BrowserRouter>
