@@ -13,7 +13,7 @@ export default function Player({ videoId }: { videoId: string }) {
     if (!videoId) return null;
 
     return (
-         <div className="p-4 rounded-lg bg-gray-800 text-white">
+         <div className="p-4 rounded-lg bg-[#eaecf1] text-white">
       <audio ref={audioRef} controls={false} />
       <div>{metadata?.name || "Loading..."}</div>
       <div>{isBuffering ? "Buffering..." : isPlaying ? "Playing" : "Paused"}</div>

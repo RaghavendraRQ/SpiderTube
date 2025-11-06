@@ -12,8 +12,7 @@
   "app": {
     "windows": [
       {
-        "decorations": false,
-        "titleBarStyle": "Transparent"
+        "decorations": false
       }
     ],
     "security": {
