@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./com
 import { Button } from "./components/ui/button";
 import { Link } from "react-router-dom";
 import { getCacheGenres } from "./models/cache";
+import { Spinner } from "./components/ui/spinner";
 
 export default function HomePage() {
     const [genres, setGenres] = useState<Genres[]>([]);
@@ -26,6 +27,11 @@ export default function HomePage() {
                         </Button>
                     </div>
                 </CardHeader>
+                {genres.length === 0 && (
+                    <div className="flex justify-center py-10">
+                    <Spinner className="size-4"/>
+                    </div>
+                )}
                 <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {genres.map((g) => (

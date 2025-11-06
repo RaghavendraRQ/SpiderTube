@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { type MusicPlaylist, type Song } from "./models/song";
 import Player from "./components/overlay/player";
+import { Spinner } from "./components/ui/spinner";
 
 export default function TracksPage() {
     const { id } = useParams<{ id: string }>();
@@ -38,6 +39,11 @@ export default function TracksPage() {
                         <CardTitle>{playlist ? playlist.name : "Playlist"}</CardTitle>
                     </div>
                 </CardHeader>
+                {playlist === null && (
+                    <div className="flex justify-center py-10">
+                   <Spinner className="size-5" /> 
+                    </div>
+                )}
                 <CardContent>
                     {playlist && playlist.tracks && playlist.tracks.length > 0 ? (
                         <div className="space-y-4">
