@@ -1,46 +1,11 @@
-import { useEffect } from "react";
 import "./App.css";
 import HomePage from "./home";
-import { Menu } from "@tauri-apps/api/menu";
-import { navigateTo, setNavigateFunction } from "./navigate";
-import { useNavigate } from "react-router-dom";
 
 function App() {
-
-  const navigator = useNavigate() ;
-
-  useEffect(() => {
-    setNavigateFunction(navigator);
-    async function setupMenu() {
-      const menu = await Menu.new({
-        items: [
-          {
-            id: 'home',
-            text: 'home',
-            action: () => navigateTo('/')
-          },
-          {
-            id: 'search',
-            text: 'search',
-            action: () => navigateTo('/search')
-          },
-          {
-            id: 'profile',
-            text: 'profile',
-            action: () => navigateTo('/profile')
-          }
-        ]
-      });
-
-      await menu.setAsAppMenu();
-    }
-    setupMenu();
-  }, [])
 
 
   return (
     <div>
-      <h1>Welcome to SpiderTube</h1>
       <HomePage />
     </div>
   )
