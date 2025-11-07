@@ -5,7 +5,7 @@ import { Slider } from "../ui/slider";
 
 export default function Player() {
     const videoId = useSongStore((state) => state.currentSongId) || "";
-    const { isPlaying, isBuffering, progress, metadata, audioRef, startStream, handlePlayPause } = useMediaSource(videoId);
+    const { isPlaying, isBuffering, metadata, audioRef, startStream, handlePlayPause } = useMediaSource(videoId);
     const duration = (metadata?.duration || 0) / 60;
 
     useEffect(() => {

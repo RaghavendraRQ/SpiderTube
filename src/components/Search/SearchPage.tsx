@@ -2,16 +2,14 @@ import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { Song, SongType } from "../../models/song";
 import SearchItem from "./SearchItem";
-import MediaPlayer from "../MediaPlayer";
-import { checkCacheDirectory } from "../../models/cache";
-import LocalPlayer from "../LocalPlayer";
 import { useSearchSuggestions } from "../../hooks/search";
+import { useSongStore } from "@/store/song";
 
 export default function SearchPage() {
     const [searchResult, setSearhResult] = useState<Song[] | null>();
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-    const [isCached, setIsCached] = useState<boolean>(false);
     // const [searchSuggestions, setSearchSuggestions] = useState<string[] | null>(null);
+    const {setCurrentSongId} = useSongStore();
 
     const {
         searchTerm,
@@ -37,8 +35,8 @@ export default function SearchPage() {
 
     const handleSongSelect = async (song: Song) => {
         setSelectedSong(song);
-        setIsCached(await checkCacheDirectory(song.id));
         console.log('selectedSong', selectedSong?.id);
+        setCurrentSongId(song.id);
         // TODO: Add play logic or navigation here
     };
 
@@ -172,13 +170,6 @@ export default function SearchPage() {
 
             </div>
         </div>
-             {selectedSong && (
-                isCached ? (
-                    <LocalPlayer video_id={selectedSong.id}/>
-                ) : (
-                    <MediaPlayer video_id={selectedSong.id} />
-                )
-             )}
         </div>
     )
 }
