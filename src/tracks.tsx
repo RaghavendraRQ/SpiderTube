@@ -4,13 +4,14 @@ import { invoke } from "@tauri-apps/api/core";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { type MusicPlaylist, type Song } from "./models/song";
 import { Spinner } from "./components/ui/spinner";
-import { useSongStore } from "./store/song";
+import { useQueueStore, useSongStore } from "./store/song";
 
 export default function TracksPage() {
     const { id } = useParams<{ id: string }>();
     const [playlist, setPlaylist] = useState<MusicPlaylist | null>(null);
     const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
     const {setCurrentSongId} = useSongStore();
+    const {songQueue, setSongQueue, clearQueue, getNextSongId} = useQueueStore();
 
     useEffect(() => {
         async function fetchPlaylist() {
@@ -35,6 +36,17 @@ export default function TracksPage() {
     const handleClick = (t: string) => {
         setSelectedTrackId(t);
         setCurrentSongId(t);
+
+        // Update the queue to start from the selected track
+        if (playlist) {
+            const trackIds = playlist.tracks.map(track => track.id);
+            const selectedIndex = trackIds.indexOf(t);
+            if (selectedIndex !== -1) {
+                const newQueue = trackIds.slice(selectedIndex + 1);
+                setSongQueue(newQueue);
+            }
+        }
+        console.log('songQueue', songQueue);
     }
 
     return (
