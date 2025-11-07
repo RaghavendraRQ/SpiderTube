@@ -7,6 +7,7 @@ use rustypipe::model::{
 pub struct Metadata {
     pub id: String,
     pub name: String,
+    pub duration: Option<u32>,
     pub r#type: String,
     pub related_id: Option<String>,
     pub size: Option<u64>,
@@ -17,6 +18,7 @@ impl Metadata {
         Self {
             id,
             name,
+            duration: None,
             r#type: String::from("audio/mpeg"),
             related_id: None,
             size: None,
@@ -34,6 +36,7 @@ impl From<TrackDetails> for Metadata {
         Self {
             id: value.track.id,
             name: value.track.name,
+            duration: value.track.duration,
             r#type: r#type.to_string(),
             size: None,
             related_id: value.related_id,
