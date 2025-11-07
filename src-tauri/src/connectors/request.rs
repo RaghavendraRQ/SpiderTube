@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use rustypipe::{
     client::RustyPipe,
-    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, Thumbnail},
+    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, Thumbnail, TrackItem}, param::Country,
 };
 use tauri::State;
 
@@ -31,7 +31,10 @@ pub async fn get_song_info(
         .await
         .map_err(SpideyTubeError::from)?;
 
-    dbg!(&metadata);
+    let lyrics = get_lyrics(&state, metadata.lyrics_id.as_ref().unwrap()).await.unwrap_or(
+        "Fake".to_string()
+    );
+    dbg!(lyrics);
     Ok(metadata.into())
 }
 
@@ -144,4 +147,36 @@ pub async fn get_playlist(
         .map_err(SpideyTubeError::from)?;
 
     Ok(playlist.into())
+}
+
+
+/// Bring the Shit back
+#[tauri::command]
+pub async fn get_charts(
+    state: State<'_, AppState>
+) -> Result<(), TauriError> {
+    let top_tracks = state
+        .rp
+        .query()
+        .music_charts(Some(Country::In))
+        .await
+        .map_err(SpideyTubeError::from)?
+        .top_playlist_id;
+    dbg!(&top_tracks);
+    Ok(())
+}
+
+/// UnSeen to other
+async fn get_lyrics(
+    state: &State<'_, AppState>,
+    lyrics_id: &str
+) -> Result<String, String> {
+    let lyrics = state
+        .rp
+        .query()
+        .music_lyrics(lyrics_id)
+        .await
+        .map_err(|e| e.to_string())?
+        .body;
+    Ok(lyrics)
 }

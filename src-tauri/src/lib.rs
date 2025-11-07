@@ -36,6 +36,8 @@ pub fn run() {
             connectors::request::get_genre_playlist,
             connectors::request::get_genres,
             connectors::request::get_playlist,
+            // Rustypipe Extras
+            connectors::request::get_charts,
             // User-level Utilites
             request::utils::clear_cache
         ])
