@@ -4,6 +4,7 @@ import { Song, SongType } from "../../models/song";
 import SearchItem from "./SearchItem";
 import { useSearchSuggestions } from "../../hooks/search";
 import { useSongStore } from "@/store/song";
+import LocalPlayer from "../LocalPlayer";
 
 export default function SearchPage() {
     const [searchResult, setSearhResult] = useState<Song[] | null>();
@@ -169,6 +170,7 @@ export default function SearchPage() {
 
 
             </div>
+            <LocalPlayer video_id="1a5nyrMtRsk" />
         </div>
         </div>
     )

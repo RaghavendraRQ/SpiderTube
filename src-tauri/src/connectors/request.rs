@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use rustypipe::{
     client::RustyPipe,
-    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, Thumbnail, TrackItem}, param::Country,
+    model::{MusicGenreItem, MusicItem, MusicPlaylistItem, MusicSearchResult, Thumbnail}, param::Country,
 };
 use tauri::State;
 
