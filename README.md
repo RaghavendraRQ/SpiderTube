@@ -129,36 +129,6 @@ bun run tauri build
 
 The compiled application will be available in `src-tauri/target/release/bundle/`.
 
-## 📁 Project Structure
-
-```
-SpiderTube/
-├── src/                      # React frontend source code
-│   ├── components/          # React components
-│   │   ├── LocalPlayer.tsx  # Audio player component
-│   │   ├── Search/          # Search functionality
-│   │   ├── Main/            # Main view components
-│   │   ├── overlay/         # Overlay components (sidebar, player)
-│   │   └── ui/              # Reusable UI components
-│   ├── models/              # TypeScript data models
-│   ├── store/               # Zustand state management
-│   ├── hooks/               # Custom React hooks
-│   ├── home.tsx             # Home page
-│   ├── genre.tsx            # Genre browsing page
-│   └── App.tsx              # Main application component
-├── src-tauri/               # Rust backend source code
-│   ├── src/
-│   │   ├── connectors/      # API connectors
-│   │   ├── model/           # Rust data models
-│   │   ├── request/         # Request handlers (streaming, API)
-│   │   ├── lib.rs           # Main library entry point
-│   │   └── main.rs          # Application entry point
-│   ├── Cargo.toml           # Rust dependencies
-│   └── tauri.conf.json      # Tauri configuration
-├── package.json             # Node.js dependencies
-└── vite.config.ts           # Vite configuration
-```
-
 ## 🔧 How It Works
 
 SpiderTube works by combining several technologies to provide a seamless music streaming experience:
@@ -183,37 +153,3 @@ Rust Backend
     ↓
 Local Cache & Playback
 ```
-
-## 🔑 Key Features Explained
-
-### Audio Streaming
-The application uses a two-step process:
-1. Fetches the video metadata using RustyPipe
-2. Streams audio using yt-dlp and processes it with FFmpeg in chunks (256KB)
-
-### Caching System
-Downloaded audio files are stored in the application's cache directory for quick access on subsequent plays.
-
-### Genre Discovery
-Genres are fetched from multiple sources and cached locally for browsing offline.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📝 License
-
-This project is open source and available under the terms specified by the repository owner.
-
-## ⚠️ Disclaimer
-
-This application is for educational purposes. Please respect YouTube's Terms of Service and content creators' rights.
-
-## 🐛 Known Issues
-
-- Ensure yt-dlp and FFmpeg are properly installed and available in your system PATH
-- First-time audio streaming may take a few seconds while extracting the stream
-
-## 📧 Contact
-
-For issues and feature requests, please use the [GitHub Issues](https://github.com/RaghavendraRQ/SpiderTube/issues) page.
