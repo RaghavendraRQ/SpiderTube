@@ -1,6 +1,5 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appCacheDir } from "@tauri-apps/api/path";
-import { open, BaseDirectory } from "@tauri-apps/plugin-fs";
 import { useState } from "react";
 
 interface LocalPlayerProps {
