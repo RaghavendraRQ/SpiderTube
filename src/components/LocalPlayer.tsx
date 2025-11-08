@@ -9,6 +9,7 @@ export default function LocalPlayer({video_id}: LocalPlayerProps) {
     
     const player = async function () {
         const appCacheDirPath = await appCacheDir();
+
         const filePath = `${appCacheDirPath}/${video_id}.mp3`;
         const fileSrc = convertFileSrc(filePath);
         console.log("Playing local file from:", fileSrc);
