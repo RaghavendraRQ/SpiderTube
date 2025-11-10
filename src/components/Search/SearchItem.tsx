@@ -21,88 +21,23 @@ export default function SearchItem({ song, onSelect }: SearchItemProps) {
         }
     };
 
-    const getTypeColor = () => {
-        switch (song.type) {
-            case SongType.Playlist:
-                return '#2ecc71';
-            case SongType.Album:
-                return '#9b59b6';
-            case SongType.Artist:
-                return '#e74c3c';
-            case SongType.User:
-                return '#3498db';
-            case SongType.Track:
-                return '#7f8c8d';
-        }
-    };
+    // color tokens removed; UI uses theme variables instead
 
     return (
-        <div 
-            className="search-item"
-            onClick={() => onSelect?.(song)}
-            style={{
-                padding: '12px',
-                margin: '8px 0',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                backgroundColor: '#fff',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-            }}
-        >
-            <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div onClick={() => onSelect?.(song)} className="glass rounded-lg p-3 flex items-center gap-4 cursor-pointer hover:opacity-95 transition">
+            <div className="relative shrink-0">
                 {song.thumbnail && song.thumbnail[0] ? (
-                    <img 
-                        src={song.thumbnail[0].url} 
-                        alt="to be implemented"
-                        style={{
-                            width: song.type === SongType.Artist ? '80px' : '120px',
-                            height: song.type === SongType.Artist ? '80px' : '68px',
-                            objectFit: 'cover',
-                            borderRadius: song.type === SongType.Artist ? '50%' : '4px'
-                        }}
-                    />
+                    <img src={song.thumbnail[0].url} alt={song.name} className={`object-cover ${song.type === SongType.Artist ? 'w-20 h-20 rounded-full' : 'w-28 h-16 rounded-md'}`} />
                 ) : (
-                    <div style={{
-                        width: song.type === SongType.Artist ? '80px' : '120px',
-                        height: song.type === SongType.Artist ? '80px' : '68px',
-                        backgroundColor: getTypeColor(),
-                        borderRadius: song.type === SongType.Artist ? '50%' : '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '24px'
-                    }}>
-                        {getTypeIcon()}
+                    <div className={`${song.type === SongType.Artist ? 'w-20 h-20 rounded-full' : 'w-28 h-16 rounded-md'} flex items-center justify-center`} style={{ background: "var(--color-accent)" }}>
+                        <span className="text-xl">{getTypeIcon()}</span>
                     </div>
                 )}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-                <h3 style={{ 
-                    margin: '0 0 4px 0', 
-                    fontSize: song.type === SongType.Track ? '16px' : '18px',
-                    fontWeight: song.type === SongType.Track ? '400' : '600',
-                    color: '#2c3e50',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                }}>
-                    {song.name}
-                </h3>
+            <div className="flex-1 min-w-0">
+                <h3 className={`${song.type === SongType.Track ? 'text-base font-normal' : 'text-lg font-semibold'} truncate`}>{song.name}</h3>
                 {song.type !== SongType.Track && (
-                    <p style={{ 
-                        margin: '0',
-                        fontSize: '14px',
-                        color: '#7f8c8d'
-                    }}>
-                        {song.type === SongType.Playlist ? 'playlist' : 
-                         song.type === SongType.Album ? 'Album' : 
-                         song.type === SongType.Artist ? 'Artist' : 'User'}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{song.type === SongType.Playlist ? 'Playlist' : song.type === SongType.Album ? 'Album' : song.type === SongType.Artist ? 'Artist' : 'User'}</p>
                 )}
             </div>
         </div>

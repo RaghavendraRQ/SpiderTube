@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+// Ensure the dark theme variables are available at the root so body/background pick them up
+document.documentElement.classList.add("dark");
 import App from "./App";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import SearchPage from "./components/Search/SearchPage";
@@ -10,7 +12,7 @@ import Player from "./components/overlay/player";
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
-      <div className="flex h-screen bg-[#e8e9f2] text-white">
+      <div className="flex h-screen bg-background text-foreground dark">
         <SideBar />
         <main className="flex-1  overflow-y-auto scrollbar-hide relative pb-16 [&::-webkit-scrollbar]:hidden">
           <div className="min-h-full rounded-lg">
@@ -22,12 +24,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               <Route path="/tracks/:id" element={React.createElement(React.lazy(() => import("./tracks")))} />
             </Routes>
           </div>
-        </main>
-        <div className="w-full fixed bottom-0 left-0 right-0 bg-[#d2dbe4] tral-800 text-white py-2">
-          <div className="mx-auto max-w-8xl px-4">
-            <Player />
-          </div>
-        </div>
+  </main>
+  <Player />
       </div>
     </BrowserRouter>
   </React.StrictMode>,

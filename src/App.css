@@ -56,6 +56,16 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  /* Glass and accent tokens (light defaults) */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-blur: 6px;
+  --surface-elev-1: rgba(255,255,255,0.06);
+  --surface-elev-2: rgba(255,255,255,0.08);
+  --accent-gradient: linear-gradient(135deg,#ff7ab6 0%,#7a6bff 100%);
+  --accent-glow: 0 6px 24px rgba(122,107,255,0.12);
+  --player-bg: rgba(255,255,255,0.5);
+  --player-border: rgba(255,255,255,0.45);
 }
 
 .container {
@@ -222,6 +232,16 @@ button {
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  /* Dark-mode glass and accent tokens */
+  --glass-bg: rgba(11,13,20,0.44);
+  --glass-border: rgba(255,255,255,0.04);
+  --glass-blur: 12px;
+  --surface-elev-1: rgba(255,255,255,0.03);
+  --surface-elev-2: rgba(255,255,255,0.05);
+  --accent-gradient: linear-gradient(120deg,#ff6fb8 0%,#7b5bff 60%, #4fd1ff 100%);
+  --accent-glow: 0 10px 40px rgba(123,91,255,0.14);
+  --player-bg: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  --player-border: rgba(255,255,255,0.06);
 }
 
 @layer base {
@@ -231,4 +251,60 @@ button {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Utility: glass surface used across the UI for cards and panels */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius);
+}
+
+/* Card surface with subtle elevation */
+.card {
+  background: var(--color-card, var(--surface-elev-1));
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 6px 20px rgba(2,6,23,0.35);
+  color: var(--color-card-foreground);
+}
+
+/* Fixed bottom player style (use in player component) */
+.player-bottom {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: 20px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  gap: 12px;
+  border-radius: 22px;
+  background: var(--player-bg);
+  border: 1px solid var(--player-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--accent-glow);
+}
+
+/* Sidebar base for left navigation */
+.app-sidebar {
+  width: 88px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
+  border-right: 1px solid rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 8px;
+}
+
+/* Accent button */
+.btn-accent {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  box-shadow: var(--accent-glow);
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
+import { Button } from "./components/ui/button";
 import { type MusicPlaylist, type Song } from "./models/song";
 import { Spinner } from "./components/ui/spinner";
 import { useQueueStore, useSongStore } from "./store/song";
@@ -64,29 +65,27 @@ export default function TracksPage() {
                 )}
                 <CardContent>
                     {playlist && playlist.tracks && playlist.tracks.length > 0 ? (
-                        <div className="space-y-4">
-                            {playlist.tracks.map((t: Song) => (
-                                <div key={t.id} className="flex items-center gap-4 p-3 border rounded">
-                                    <div className="w-16 h-16 bg-slate-100 flex items-center justify-center overflow-hidden rounded">
-                                        {t.thumbnail && t.thumbnail.length > 0 ? (
-                                            <img src={t.thumbnail[0].url} alt={t.name} className="object-cover w-full h-full" />
-                                        ) : (
-                                            <div className="text-sm text-muted-foreground">No image</div>
-                                        )}
+                            <div className="space-y-4">
+                                {playlist.tracks.map((t: Song) => (
+                                    <div key={t.id} className="flex items-center gap-4 p-3 rounded-lg glass">
+                                        <div className="w-16 h-16 bg-muted flex items-center justify-center overflow-hidden rounded">
+                                            {t.thumbnail && t.thumbnail.length > 0 ? (
+                                                <img src={t.thumbnail[0].url} alt={t.name} className="object-cover w-full h-full" />
+                                            ) : (
+                                                <div className="text-sm text-muted-foreground">No image</div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="font-medium truncate">{t.name}</div>
+                                            <div className="text-sm text-muted-foreground">{t.type}</div>
+                                        </div>
+                                        <div>
+                                            <Button onClick={() => handleClick(t.id)}>Play</Button>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="font-medium truncate">{t.name}</div>
-                                        <div className="text-sm text-muted-foreground">{t.type}</div>
-                                    </div>
-                                    <div>
-                                        <button className="bg-blue-600 text-white px-3 py-1 rounded"
-                                        onClick={() => handleClick(t.id)}
-                                        >Play</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
+                                ))}
+                            </div>
+                        ) : (
                         <div className="text-center text-muted-foreground">No Songs Found</div>
                     )}
                 </CardContent>

@@ -35,7 +35,7 @@ export default function HomePage() {
                 <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {genres.map((g) => (
-                            <Link key={g.id} to={`/genre/${g.id}`} className="rounded-lg bg-white p-4 shadow-sm border hover:shadow-md transition">
+                            <Link key={g.id} to={`/genre/${g.id}`} className="rounded-lg glass card p-4 hover:shadow-md transition">
                                 <h4 className="font-semibold">{g.name}</h4>
                             </Link>
                         ))}

@@ -67,12 +67,13 @@ export default function ChannelPlayer({ videoId }: ChannelPlayerProps) {
 
 
     return (
-        <div>
+        <div className="glass card p-4 flex flex-col gap-3">
             <input type="text" placeholder="File Path"
                 value={filePath}
                 onChange={(e) => setFilePath(e.target.value)}
+                className="bg-transparent outline-none w-full"
             />
-            <button onClick={SetUpChannel}>
+            <button className="btn-accent px-3 py-1 rounded" onClick={SetUpChannel}>
                 Set Up Channel
             </button>
         </div>

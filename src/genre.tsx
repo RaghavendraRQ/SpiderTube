@@ -33,7 +33,7 @@ export default function GenrePage() {
                         {playlists.map(p => {
                             const thumbnail = p.thumbnail && p.thumbnail.length > 0 ? p.thumbnail[0] : null;
                             return (
-                                <div key={p.id} className="border rounded overflow-hidden bg-white shadow-sm">
+                                <div key={p.id} className="rounded-lg glass card overflow-hidden">
                                     <Link to={`/tracks/${p.id}`} className="w-full block text-center text-white py-2 transition">
                                     {thumbnail ? (
                                         <img src={thumbnail.url} alt={p.name} className="object-cover" 
@@ -41,7 +41,7 @@ export default function GenrePage() {
                                         height={thumbnail.height}
                                         />
                                     ) : (
-                                        <div className="w-full h-40 bg-slate-100 flex items-center justify-center text-muted-foreground">No image</div>
+                                        <div className="w-full h-40 bg-muted flex items-center justify-center text-muted-foreground">No image</div>
                                     )}
                                      <div className="p-4">
                                         <h4 className="font-semibold truncate">{p.name}</h4>

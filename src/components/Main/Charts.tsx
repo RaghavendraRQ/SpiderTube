@@ -17,8 +17,6 @@ export default function ChartsPage() {
     }, []);
 
     return (
-        <div>
-            Charts Page
-        </div>
+        <div className="glass card p-6">Charts Page</div>
     )
 }

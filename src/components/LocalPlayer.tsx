@@ -25,7 +25,7 @@ export default function LocalPlayer({video_id}: LocalPlayerProps) {
 
     return (
         <div>
-            <button onClick={player}>Play Local Audio</button>
+            <button className="btn-accent px-3 py-1 rounded" onClick={player}>Play Local Audio</button>
         </div>
     )
 }
