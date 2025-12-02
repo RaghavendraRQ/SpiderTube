@@ -39,7 +39,8 @@ pub fn run() {
             // Rustypipe Extras
             connectors::request::get_charts,
             // User-level Utilites
-            request::utils::clear_cache
+            request::utils::clear_cache,
+            request::utils::stream_from_cache
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
